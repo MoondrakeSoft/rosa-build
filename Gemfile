@@ -46,7 +46,7 @@ gem 'whenever', require: false
 
 gem 'jbuilder'
 gem 'rails3-jquery-autocomplete'
-gem 'sprockets'
+gem 'sprockets', '< 2.13'
 gem 'will_paginate'
 gem 'meta-tags', require: 'meta_tags'
 gem 'haml-rails'
