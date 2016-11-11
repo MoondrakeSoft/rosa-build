@@ -104,7 +104,8 @@ gem 'rack-utf8_sanitizer'
 group :production do
   gem 'airbrake', '~> 4.3.0'
   #gem 'bluepill', '~> 0.0.60', require: false
-  gem 'puma', '~> 2.16.0'
+  gem 'puma', '2.11.3'
+  gem 'unicorn-rails'
 end
 
 group :development do
@@ -122,7 +123,7 @@ group :development do
   gem 'binding_of_caller'
   gem 'meta_request'
   gem 'localeapp'
-  gem 'skype'
+  #gem 'skype'
   #gem 'ruby-dbus' if RUBY_PLATFORM =~ /linux/i # Error at deploy
   gem 'rack-mini-profiler', require: false
 end
