@@ -104,7 +104,7 @@ gem 'rack-utf8_sanitizer'
 group :production do
   gem 'airbrake', '~> 4.3.0'
   #gem 'bluepill', '~> 0.0.60', require: false
-  gem 'puma'
+  gem 'puma', '~> 2.16.0'
 end
 
 group :development do
