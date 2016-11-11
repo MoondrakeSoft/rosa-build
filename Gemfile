@@ -96,7 +96,7 @@ gem 'sitemap_generator'
 gem 'codemirror-rails', '~> 4.5'
 
 source 'https://rails-assets.org' do
-  gem 'rails-assets-notifyjs'
+  gem 'rails-assets-notifyjs', '0.3.2'
 end
 
 gem 'rack-utf8_sanitizer'
