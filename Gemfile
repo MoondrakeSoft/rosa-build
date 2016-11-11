@@ -102,7 +102,7 @@ end
 gem 'rack-utf8_sanitizer'
 
 group :production do
-  gem 'airbrake'
+  gem 'airbrake', '~> 4.3.0'
   #gem 'bluepill', '~> 0.0.60', require: false
   gem 'puma'
 end
