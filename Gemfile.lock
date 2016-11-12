@@ -85,6 +85,9 @@ GEM
       tzinfo (~> 1.1)
     addressable (2.5.0)
       public_suffix (~> 2.0, >= 2.0.2)
+    airbrake (4.2.1)
+      builder
+      multi_json
     ancestry (2.2.2)
       activerecord (>= 3.0.0)
     angular-i18n (0.1.2)
@@ -681,6 +684,7 @@ PLATFORMS
 DEPENDENCIES
   RedCloth
   activeadmin!
+  airbrake (~> 4.2.0)
   ancestry
   angular-i18n
   angular-rails-templates
