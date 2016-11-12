@@ -6,7 +6,7 @@ gem 'activeadmin',                      github: 'activeadmin'
 gem 'pg'
 gem 'schema_plus'
 ########
-gem 'devise'
+gem 'devise', '~> 3.5.1'
 gem 'omniauth'
 gem 'omniauth-facebook'
 gem 'omniauth-google-oauth2'
@@ -102,7 +102,7 @@ end
 gem 'rack-utf8_sanitizer'
 
 group :production do
-  gem 'airbrake', '~> 4.3.0'
+  gem 'airbrake', '~> 4.2.0'
   #gem 'bluepill', '~> 0.0.60', require: false
   gem 'puma', '2.11.3'
   gem 'unicorn-rails'
