@@ -23,7 +23,7 @@ gem 'resque-scheduler', '~> 2.5.4'
 gem 'perform_later', git: 'git://github.com/KensoDev/perform_later.git' # should be after resque_mailer
 gem 'russian'
 gem 'highline', '~> 1.6.20'
-gem 'state_machines-activerecord'
+gem 'state_machines-activerecord', '~> 0.2.0'
 gem 'redis-rails'
 
 gem 'grack', git: 'git://github.com/rosa-abf/grack.git', require: 'git_http'
