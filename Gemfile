@@ -41,7 +41,7 @@ gem 'rdiscount'
 gem 'RedCloth'
 gem 'wikicloth'
 
-gem 'newrelic_rpm'
+gem 'newrelic_rpm', '~> 3.12.0.288'
 gem 'whenever', require: false
 
 gem 'jbuilder'
