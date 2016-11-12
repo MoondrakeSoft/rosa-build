@@ -1,7 +1,8 @@
 base_path  = "/srv/rosa_build"
 pidfile File.join(base_path, 'shared', 'pids', 'unicorn.pid')
 state_path File.join(base_path, 'shared', 'pids', 'puma.state')
-bind 'unix:///tmp/rosa_build_unicorn.sock'
+#bind 'unix:///tmp/rosa_build_unicorn.sock'
+bind 'tcp://127.0.0.1:8080'
 
 environment ENV['RAILS_ENV'] || 'production'
 threads *(ENV['PUMA_THREADS'] || '16,16').split(',')
