@@ -1,7 +1,7 @@
 base_path  = "/srv/rosa_build"
 pidfile File.join(base_path, 'shared', 'pids', 'unicorn.pid')
 state_path File.join(base_path, 'shared', 'pids', 'puma.state')
-#bind 'unix:///tmp/rosa_build_unicorn.sock'
+bind 'unix:///tmp/rosa_build_unicorn.sock'
 bind 'tcp://127.0.0.1:8080'
 
 environment ENV['RAILS_ENV'] || 'production'
@@ -32,5 +32,4 @@ on_worker_boot do
   Rails.logger.info('Connected to Redis')
 end
 
-#activate_control_app 'unix:///tmp/rosa_build_pumactl.sock'
-activate_control_app 'tcp://127.0.0.1:8080'
+activate_control_app 'unix:///tmp/rosa_build_pumactl.sock'
