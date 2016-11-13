@@ -340,9 +340,9 @@ GEM
       scrivener (~> 0.0.3)
     ohm-expire (0.1.3.2)
       ohm (>= 0.1.5)
-    omniauth (1.3.1)
+    omniauth (1.2.2)
       hashie (>= 1.2, < 4)
-      rack (>= 1.0, < 3)
+      rack (~> 1.0)
     omniauth-facebook (4.0.0)
       omniauth-oauth2 (~> 1.2)
     omniauth-github (1.1.2)
@@ -731,7 +731,7 @@ DEPENDENCIES
   ngmin-rails
   ohm (~> 1.3.2)
   ohm-expire (~> 0.1.3)
-  omniauth
+  omniauth (~> 1.2.2)
   omniauth-facebook
   omniauth-github
   omniauth-google-oauth2

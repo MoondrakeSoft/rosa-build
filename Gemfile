@@ -7,7 +7,7 @@ gem 'pg'
 gem 'schema_plus'
 ########
 gem 'devise', '~> 3.5.1'
-gem 'omniauth'
+gem 'omniauth', '~> 1.2.2'
 gem 'omniauth-facebook'
 gem 'omniauth-google-oauth2'
 gem 'omniauth-github'
