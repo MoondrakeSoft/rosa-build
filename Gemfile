@@ -2,6 +2,7 @@ source 'http://rubygems.org'
 
 gem 'rails'
 
+gem 'dotenv'
 gem 'activeadmin',                      github: 'activeadmin'
 gem 'pg'
 gem 'schema_plus'
