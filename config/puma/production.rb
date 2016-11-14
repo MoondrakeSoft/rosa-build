@@ -1,5 +1,5 @@
-base_path  = "/app/rosa-build"
-bind 'unix:///app/rosa-build/rosa_build.sock'
+base_path  = "/var/run/rosa-build"
+bind 'unix:///var/run/rosa-build/rosa_build.sock'
 
 environment ENV['RAILS_ENV'] || 'production'
 threads *(ENV['PUMA_THREADS'] || '16,16').split(',')
