@@ -14,7 +14,8 @@ common: &common
       host: <%= ENV["ABF_WORKER_LOG_SERVER_HOST"] %>
       port: <%= ENV["ABF_WORKER_LOG_SERVER_PORT"] %>
   airbrake:
-    api_key: <%= ENV["AIRBRAKE_API_KEY"] %>
+    id: <%= ENV["AIRBRAKE_APP_ID"] %>
+    secret: <%= ENV["AIRBRAKE_APP_SECRET"] %>
     host: <%= ENV["AIRBRAKE_HOST"] %>
   keys:
     key_pair_secret_key: <%= ENV["KEY_PAIR_SECRET_KEY"] %>

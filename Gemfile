@@ -108,7 +108,7 @@ gem 'github_api'
 gem 'faraday-http-cache'
 
 group :production do
-  gem 'airbrake'
+  gem 'airbrake', '~> 5.6.0'
   #gem 'bluepill', '~> 0.0.60', require: false
   gem 'puma'
 end
