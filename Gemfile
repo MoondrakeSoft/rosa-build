@@ -126,7 +126,7 @@ group :development do
   gem 'capistrano-deploy', require: false
   gem 'capistrano-nginx', require: false
   gem 'capistrano-resque', require: false
-  gem 'capistrano-puma', require: false
+  gem 'capistrano3-puma', require: false
   gem 'io-console', require: false
   # Better Errors & RailsPanel
   gem 'better_errors'

@@ -133,8 +133,6 @@ GEM
     capistrano-harrow (0.5.3)
     capistrano-nginx (1.0.0)
       capistrano (~> 3.1)
-    capistrano-puma (0.2.3)
-      capistrano (>= 3.0)
     capistrano-rails (1.2.0)
       capistrano (~> 3.1)
       capistrano-bundler (~> 1.1)
@@ -144,6 +142,9 @@ GEM
       capistrano
       resque
       resque-scheduler
+    capistrano3-puma (1.2.1)
+      capistrano (~> 3.0)
+      puma (>= 2.6)
     charlock_holmes (0.7.3)
     chronic (0.10.2)
     chunky_png (1.3.8)
@@ -717,10 +718,10 @@ DEPENDENCIES
   capistrano-bundler
   capistrano-deploy
   capistrano-nginx
-  capistrano-puma
   capistrano-rails
   capistrano-rake
   capistrano-resque
+  capistrano3-puma
   charlock_holmes
   codemirror-rails (~> 4.5)
   coffee-rails
