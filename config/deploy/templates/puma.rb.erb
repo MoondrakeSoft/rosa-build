@@ -1,0 +1,57 @@
+#!/usr/bin/env puma
+
+directory '<%= current_path %>'
+rackup "<%=fetch(:puma_rackup)%>"
+environment environment ENV['RAILS_ENV'] || '<%= fetch(:puma_env) %>'
+<% if fetch(:puma_tag) %>
+  tag '<%= fetch(:puma_tag)%>'
+<% end %>
+pidfile "<%=fetch(:puma_pid)%>"
+state_path "<%=fetch(:puma_state)%>"
+stdout_redirect '<%=fetch(:puma_access_log)%>', '<%=fetch(:puma_error_log)%>', true
+
+
+threads *(ENV['PUMA_WORKERS'] || '<%=fetch(:puma_threads).join(',')%>').spit(',')
+
+<%= puma_bind %>
+<% if fetch(:puma_control_app) %>
+activate_control_app "<%= fetch(:puma_default_control_app) %>"
+<% end %>
+workers ENV['PUMA_WORKERS'] || <%= puma_workers %>
+<% if fetch(:puma_worker_timeout) %>
+worker_timeout <%= fetch(:puma_worker_timeout).to_i %>
+<% end %>
+
+<% if puma_preload_app? %>
+preload_app!
+<% else %>
+prune_bundler
+<% end %>
+
+on_restart do
+  puts 'Refreshing Gemfile'
+  ENV["BUNDLE_GEMFILE"] = "<%= fetch(:bundle_gemfile, "#{current_path}/Gemfile") %>"
+end
+
+<% if puma_preload_app? and fetch(:puma_init_active_record) %>
+on_worker_boot do
+  if defined?(ActiveRecord::Base)
+    ActiveSupport.on_load(:active_record) do
+      ActiveRecord::Base.connection.disconnect! rescue ActiveRecord::ConnectionNotEstablished
+
+      config = Rails.application.config.database_configuration[Rails.env]
+      # config['reaping_frequency'] = ENV['DB_REAP_FREQ'] || 10 # seconds
+      # config['pool']              = ENV['DB_POOL']      || 3
+
+      ActiveRecord::Base.establish_connection(config)
+
+      Rails.logger.info "Connected to PG. Connection pool size #{config['pool']}, reaping frequency #{config['reaping_frequency']}"
+    end
+    # QC::Conn.connect
+    Rails.logger.info('Connected to PG')
+  end
+
+  Redis.connect!
+  Rails.logger.info('Connected to Redis')
+end
+<% end %>

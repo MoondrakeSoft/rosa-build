@@ -53,11 +53,13 @@ set :linked_dirs, fetch(:linked_dirs, []) + %w(
 set :keep_releases, 3
 
 
+set :puma_preload_app, true
+set :puma_threads, [16, 16]
+set :puma_workers, 7
+set :puma_default_control_app, "unix://#{shared_path}/tmp/sockets/pumactl.sock"
+set :puma_conf, "#{shared_path}/config/puma.rb"
+set :puma_init_active_record, true
 
-require 'etc'
-set :workers_count, 48#Etc.nprocessors
-
-#require './lib/recipes/resque'
 
 namespace :deploy do
 
