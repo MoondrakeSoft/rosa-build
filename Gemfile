@@ -2,7 +2,6 @@ source 'http://rubygems.org'
 
 gem 'rails'
 
-gem 'dotenv'
 gem 'activeadmin',                      github: 'activeadmin'
 gem 'pg'
 gem 'schema_plus'
@@ -87,6 +86,7 @@ gem 'coffee-rails'
 gem 'bootstrap-sass'
 gem 'font-awesome-rails'
 gem 'zeroclipboard-rails'
+gem 'dotenv-rails'
 
 gem 'compass-rails'
 gem 'uglifier'
