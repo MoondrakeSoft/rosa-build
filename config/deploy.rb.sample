@@ -62,7 +62,7 @@ set :workers_count, 48#Etc.nprocessors
 namespace :deploy do
 
   desc "Setup config files (first time setup)"
-  task :config do
+  task :setup do
     on roles(:app) do
       execute "mkdir -p #{shared_path}/config"
       execute "mkdir -p #{shared_path}/tmp/pids"
@@ -97,6 +97,7 @@ namespace :deploy do
   end
 end
 
+#FIXME
 #after "deploy:finalize_update", "deploy:symlink_all"
 #after "deploy:update_code", "deploy:migrate"
 
@@ -140,7 +141,7 @@ namespace :update do
 
     run "export PGPASSWORD=#{remote_settings["password"]} && pg_dump --host=#{remote_settings["host"]} --port=#{remote_settings["port"]} --username #{remote_settings["username"]} --file #{current_path}/tmp/#{remote_settings["database"]}_dump -Fc #{remote_settings["database"]}"
 
-    run_locally "rsync --recursive --times --rsh=ssh --human-readable --progress #{user}@#{domain}:#{current_path}/tmp/#{remote_settings["database"]}_dump tmp/"
+    run_locally "rsync --recursive --times --rsh=ssh --compress --human-readable --progress #{user}@#{domain}:#{current_path}/tmp/#{remote_settings["database"]}_dump tmp/"
 
     run_locally "dropdb -U #{local_settings["username"]} --host=#{local_settings["host"]} --port=#{local_settings["port"]} #{local_settings["database"]}"
     run_locally "createdb -U #{local_settings["username"]} --host=#{local_settings["host"]} --port=#{local_settings["port"]} -T template0 #{local_settings["database"]}"
@@ -153,4 +154,3 @@ namespace :update do
     update.postgresql
   end
 end
-
