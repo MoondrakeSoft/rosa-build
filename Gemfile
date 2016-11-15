@@ -120,9 +120,14 @@ group :development do
   gem 'shotgun'
   # deploy
   gem 'capistrano', require: false
-  gem 'rvm-capistrano', require: false
+  gem 'capistrano-bundler', require: false
+  gem 'capistrano-rails', require: false
+  gem 'capistrano-rake', require: false
+  gem 'capistrano-deploy', require: false
+  gem 'capistrano-nginx', require: false
+  gem 'capistrano-resque', require: false
+  #gem 'rvm-capistrano', require: false
   gem 'cape', require: false
-  gem 'capistrano_colors', require: false
   # Better Errors & RailsPanel
   gem 'better_errors'
   gem 'binding_of_caller'
