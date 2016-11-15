@@ -1,4 +1,4 @@
-source 'http://rubygems.org'
+source 'https://rubygems.org'
 
 gem 'rails'
 
@@ -7,51 +7,27 @@ gem 'pg'
 gem 'schema_plus'
 ########
 gem 'devise'
-gem 'omniauth'
-gem 'omniauth-facebook'
-gem 'omniauth-google-oauth2'
 gem 'omniauth-github'
-# gem 'omniauth-openid', '~> 1.0.1'
 gem 'pundit'
+gem 'rbtrace'
 
-gem 'ancestry'
 gem 'paperclip'
-gem 'resque'
-gem 'resque-status'
-gem 'resque_mailer'
-gem 'resque-scheduler', '~> 2.5.4'
-gem 'perform_later', git: 'git://github.com/KensoDev/perform_later.git' # should be after resque_mailer
+gem 'sinatra', :require => nil
+gem 'sidekiq'
+gem 'kiqit', :git => 'https://github.com/DuratarskeyK/kiqit.git'
+gem 'sidekiq-scheduler', '~> 2.0'
+gem 'sidekiq-failures'
 gem 'russian'
-gem 'highline', '~> 1.6.20'
 gem 'state_machines-activerecord'
 gem 'redis-rails'
 
-gem 'grack', git: 'git://github.com/rosa-abf/grack.git', require: 'git_http'
-gem 'grit', git: 'git://github.com/rosa-abf/grit.git', tag: '2.6.17'
-gem 'charlock_holmes'
-gem 'github-linguist', '3.1.5', require: 'linguist'
-gem 'diff-display'
-
-# Wiki
-gem 'gollum-lib', '~> 3.0'
-gem 'redcarpet', '~> 3.3'
-gem 'creole'
-gem 'rdiscount'
-# gem 'org-ruby'
-gem 'RedCloth'
-gem 'wikicloth'
-
-gem 'newrelic_rpm'
-gem 'whenever', require: false
+#gem 'newrelic_rpm'
 
 gem 'jbuilder'
-gem 'rails3-jquery-autocomplete'
 gem 'sprockets'
 gem 'will_paginate'
 gem 'meta-tags', require: 'meta_tags'
 gem 'haml-rails'
-gem 'jquery-rails'
-gem 'jquery-migrate-rails'
 gem 'ruby-haml-js'
 gem 'slim'
 gem 'simple_form', '3.1.0.rc2'
@@ -62,16 +38,13 @@ gem 'rest-client'
 gem 'ohm', '~> 1.3.2' # Ohm 2 breaks the compatibility with previous versions.
 gem 'ohm-expire', '~> 0.1.3'
 
-gem 'ffi'
+gem 'pygments.rb'
 
 gem 'attr_encrypted'
-gem 'gemoji'
 
 # AngularJS related stuff
-gem 'underscore-rails'
-gem 'angularjs-rails', '~> 1.3.14'
+gem 'angular-rails-templates'
 gem 'ng-rails-csrf'
-gem 'momentjs-rails'
 gem 'angular-i18n'
 gem 'js-routes'
 gem 'soundmanager-rails'
@@ -92,24 +65,20 @@ gem 'compass-rails'
 gem 'uglifier'
 gem 'therubyracer', platforms: [:mri, :rbx]
 gem 'therubyrhino', platforms: :jruby
-gem 'sitemap_generator'
 
-gem 'codemirror-rails', '~> 4.5'
-
-source 'http://rails-assets.org' do
-  gem 'rails-assets-notifyjs', '0.3.2'
+source 'http://rails-assets.org'do
+  gem 'rails-assets-notifyjs'
 end
 
 gem 'rack-utf8_sanitizer'
 gem 'redis-semaphore'
 
 #github api
-gem 'github_api'
+gem "octokit", "~> 4.0"
 gem 'faraday-http-cache'
 
 group :production do
   gem 'airbrake', '~> 5.6.0'
-  #gem 'bluepill', '~> 0.0.60', require: false
   gem 'puma'
 end
 
@@ -128,12 +97,12 @@ group :development do
   gem 'capistrano-resque', require: false
   gem 'capistrano3-puma', require: false
   gem 'io-console', require: false
+  gem 'state_machines-graphviz'
   # Better Errors & RailsPanel
   gem 'better_errors'
   gem 'binding_of_caller'
   gem 'meta_request'
   gem 'localeapp'
-  #gem 'skype'
   #gem 'ruby-dbus' if RUBY_PLATFORM =~ /linux/i # Error at deploy
   gem 'rack-mini-profiler', require: false
 end

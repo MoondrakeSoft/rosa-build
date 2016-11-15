@@ -7,7 +7,6 @@ json.build_list do
 
   json.cache! [@build_list, current_user], expires_in: 1.minute do
     json.(@build_list, :id, :container_status, :status)
-    json.(@build_list, :update_type)
     json.updated_at @build_list.updated_at
     json.updated_at_utc @build_list.updated_at.strftime('%Y-%m-%d %H:%M:%S UTC')
 
@@ -22,6 +21,8 @@ json.build_list do
     json.can_publish_in_future can_publish_in_future?(@build_list)
     json.can_publish_into_repository @build_list.can_publish_into_repository?
 
+    json.fail_reason @build_list.fail_reason if @build_list.fail_reason.present?
+
     json.container_path container_url if @build_list.container_published?
 
     json.publisher do
@@ -34,11 +35,6 @@ json.build_list do
       json.path user_path(@build_list.builder)
     end if @build_list.builder && (!@build_list.builder.system? || current_user.try(:admin?))
 
-    json.advisory do
-      json.(@build_list.advisory, :description, :advisory_id)
-      json.path advisory_path(@build_list.advisory)
-    end if @build_list.advisory
-
     json.results @build_list.results do |result|
       json.file_name result['file_name']
       json.sha1 result['sha1']
@@ -47,7 +43,7 @@ json.build_list do
       json.created_at Time.zone.at(result['timestamp']).to_s if result['timestamp']
 
       json.url file_store_results_url(result['sha1'], result['file_name'])
-    end if @build_list.new_core? && @build_list.results.present?
+    end if @build_list.results.present?
 
     dependent_projects_exists = false
     json.packages @build_list.packages do |package|

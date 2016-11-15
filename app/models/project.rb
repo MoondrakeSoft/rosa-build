@@ -1,12 +1,8 @@
 require 'base64'
 
 class Project < ActiveRecord::Base
-  has_ancestry orphan_strategy: :adopt # we replace a 'path' method in the Git module
-
   include Autostart
   include Owner
-  include Git
-  include Wiki
   include UrlHelper
   include EventLoggable
   include Project::DefaultBranch
@@ -23,8 +19,6 @@ class Project < ActiveRecord::Base
   belongs_to :owner, polymorphic: true, counter_cache: :own_projects_count
   belongs_to :maintainer, class_name: 'User'
 
-  has_many :build_scripts,  dependent: :destroy
-
   has_many :project_to_repositories, dependent: :destroy
   has_many :repositories, through: :project_to_repositories
   has_many :project_statistics, dependent: :destroy
@@ -32,11 +26,9 @@ class Project < ActiveRecord::Base
   has_many :build_lists, dependent: :destroy
 
   has_many :relations, as: :target, dependent: :destroy
-  has_many :collaborators, through: :relations, source: :actor, source_type: 'User'
   has_many :groups,        through: :relations, source: :actor, source_type: 'Group'
 
   has_many :packages, class_name: 'BuildList::Package', dependent: :destroy
-  has_and_belongs_to_many :advisories # should be without dependent: :destroy
 
   validates :name, uniqueness: { scope: [:owner_id, :owner_type], case_sensitive: false },
                    presence: true,
@@ -87,15 +79,7 @@ class Project < ActiveRecord::Base
   end
 
   def members(*includes)
-    collaborators.includes(includes) | groups.map{ |g| g.members.includes(includes) }.flatten
-  end
-
-  def add_member(member, role = 'admin')
-    Relation.add_member(member, self, role)
-  end
-
-  def remove_member(member)
-    Relation.remove_member(member, self)
+    groups.map{ |g| g.members.includes(includes) }.flatten
   end
 
   def platforms
@@ -137,7 +121,6 @@ class Project < ActiveRecord::Base
     build_list = build_lists.build do |bl|
       bl.save_to_platform               = save_to_platform
       bl.build_for_platform             = build_for_platform
-      bl.update_type                    = 'newpackage'
       bl.arch                           = arch
       bl.project_version                = project_version
       bl.user                           = user
@@ -211,7 +194,6 @@ class Project < ActiveRecord::Base
             build_list = p.build_lists.build do |bl|
               bl.save_to_platform       = repository.platform
               bl.build_for_platform     = platform
-              bl.update_type            = BuildList::UPDATE_TYPE_NEWPACKAGE
               bl.arch_id                = arch_id
               bl.project_version        = p.project_version_for(repository.platform, platform)
               bl.user                   = user
@@ -232,13 +214,14 @@ class Project < ActiveRecord::Base
   end
 
   def increase_release_tag(project_version, message)
-    file = Github_blobs_api.get github_get_organization, name, '/' + name + '.spec', ref: project_version rescue return 1
-    decoded_content = Base64.decode64(file.content)
-    new_content = Project.replace_release_tag decoded_content
-    return 1 if new_content == decoded_content
-    Github_blobs_api.update github_get_organization, name, '/' + name + '.spec', path: '/' + name + '.spec',\
-                            message: message, content: new_content, sha: file.sha rescue return 2
-    return 2
+    file = Github_blobs_api.contents github_get_organization + '/' + name, path: '/' + name + '.spec', ref: project_version rescue nil
+    if file
+      decoded_content = Base64.decode64(file.content)
+      new_content = Project.replace_release_tag decoded_content
+      return if new_content == decoded_content
+      Github_blobs_api.update_contents github_get_organization + '/' + name, '/' + name + '.spec',\
+                              message, file.sha, new_content, branch: project_version rescue nil
+    end
   end
 
   protected

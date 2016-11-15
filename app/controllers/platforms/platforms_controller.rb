@@ -2,22 +2,16 @@ class Platforms::PlatformsController < Platforms::BaseController
   include FileStoreHelper
 
   before_action :authenticate_user!
-  skip_before_action :authenticate_user!, only: [:advisories, :members, :show] if APP_CONFIG['anonymous_access']
+  skip_before_action :authenticate_user!, only: [:members, :show] if APP_CONFIG['anonymous_access']
 
   def index
     authorize :platform
-    respond_to do |format|
-      format.html {}
-
-      format.json {
-        @platforms = PlatformPolicy::Scope.new(current_user, Platform).related
-        @platforms_count = @platforms.count
-        @platforms = @platforms.paginate(page: current_page, per_page: Platform.per_page)
-      }
-    end
+    @platforms = PlatformPolicy::Scope.new(current_user, Platform).related.select(:name, :distrib_type)
   end
 
   def show
+    @repositories = @platform.repositories
+    @repositories = Repository.custom_sort(@repositories).paginate(page: current_page)
   end
 
   def new
@@ -150,11 +144,6 @@ class Platforms::PlatformsController < Platforms::BaseController
     redirect_to members_platform_url(@platform)
   end
 
-  def advisories
-    authorize @platform
-    @advisories = @platform.advisories.paginate(page: params[:page])
-  end
-
   def clear
     authorize @platform
     @platform.clear
@@ -168,9 +157,9 @@ class Platforms::PlatformsController < Platforms::BaseController
     subject_params(Platform)
   end
 
-  # Private: before_action hook which loads Platform.
   def load_platform
-    authorize @platform = Platform.find_cached(params[:id]), :show? if params[:id]
+    return unless params[:id]
+    authorize @platform = Platform.find_cached(params[:id]), :show?
   end
 
 end

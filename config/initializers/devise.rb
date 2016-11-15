@@ -45,9 +45,6 @@ Devise.setup do |config|
   # Tell if authentication through request.params is enabled. True by default.
   # config.params_authenticatable = true
 
-  # Tell if authentication through HTTP Basic Auth is enabled. False by default.
-  config.http_authenticatable = true
-
   # If http headers should be returned for AJAX requests. True by default.
   # config.http_authenticatable_on_xhr = true
 
@@ -187,13 +184,10 @@ Devise.setup do |config|
   # Add a new OmniAuth provider. Check the wiki for more information on setting
   # up on your models and hooks.
   # config.omniauth :github, 'APP_ID', 'APP_SECRET', :scope => 'user,public_repo'
+  config.omniauth :github, APP_CONFIG['keys']['github']['id'], APP_CONFIG['keys']['github']['secret'], scope: 'user:email'
 
   # require 'openid/store/filesystem'
   # config.omniauth :openid, :name => 'open_id' #, :store => OpenID::Store::Filesystem.new('./tmp')
-
-  config.omniauth :facebook, APP_CONFIG['keys']['facebook']['id'], APP_CONFIG['keys']['facebook']['secret']
-  config.omniauth :google_oauth2, APP_CONFIG['keys']['google']['id'], APP_CONFIG['keys']['google']['secret'], {:access_type => 'offline', :approval_prompt => ''}
-  config.omniauth :github, APP_CONFIG['keys']['github']['id'], APP_CONFIG['keys']['github']['secret'], {:scope => 'user:email'}
 
   # ==> Warden configuration
   # If you want to use other strategies, that are not supported by Devise, or
@@ -206,4 +200,6 @@ Devise.setup do |config|
   # end
 
   config.secret_key = APP_CONFIG['keys']['devise']['secret']
+
+  config.reconfirmable = false
 end

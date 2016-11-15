@@ -1,12 +1,8 @@
-h4
-  - if project.public?
-    i.fa.fa-unlock-alt.text-success>
-  - else
-    i.fa.fa-lock.text-danger>
-  a href=project_path(project)
-    = project.name_with_owner
-p
-  = project.description
-.help-block
-  => t('.updated')
-  = time_ago_in_words(project.updated_at)
+.row
+  .pull-left
+    a href=project_build_lists_path(project)
+      = project.name_with_owner
+  - if BuildListPolicy.new(current_user, project.build_lists.build).new?
+    .pull-right
+      a href=new_project_build_list_path(project)
+        = t 'dashboard.projects.new_build'

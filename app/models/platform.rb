@@ -41,9 +41,6 @@ class Platform < ActiveRecord::Base
   has_many :actors, as: :target, class_name: 'Relation', dependent: :destroy
   has_many :members, through: :actors, source: :actor, source_type: 'User'
 
-
-  has_and_belongs_to_many :advisories
-
   has_many :packages, class_name: "BuildList::Package", dependent: :destroy
 
   has_many :mass_builds, foreign_key: :save_to_platform_id
@@ -95,8 +92,7 @@ class Platform < ActiveRecord::Base
   after_update :freeze_platform_and_update_repos
   after_update :update_owner_relation
 
-  after_create  -> { symlink_directory unless hidden? }
-  after_destroy -> { remove_symlink_directory unless hidden? }
+  #after_commit  -> { symlink_directory unless hidden? }, on: :create
 
   accepts_nested_attributes_for :platform_arch_settings, allow_destroy: true
 
@@ -216,19 +212,13 @@ class Platform < ActiveRecord::Base
     end
   end
 
-  def symlink_directory
-    # umount_directory_for_rsync # TODO ignore errors
-    system("ln -s #{path} #{symlink_path}")
-    Arch.all.each do |arch|
-      str = "country=Russian Federation,city=Moscow,latitude=52.18,longitude=48.88,bw=1GB,version=2011,arch=#{arch.name},type=distrib,url=#{public_downloads_url}\n"
-      File.open(File.join(symlink_path, "#{name}.#{arch.name}.list"), 'w') {|f| f.write(str) }
-    end
-  end
-  later :symlink_directory, queue: :middle
-
-  def remove_symlink_directory
-    system("rm -Rf #{symlink_path}")
-  end
+  #def symlink_directory
+  #   umount_directory_for_rsync # TODO ignore errors
+  #  Arch.all.each do |arch|
+  #    str = "country=Russian Federation,city=Moscow,latitude=52.18,longitude=48.88,bw=1GB,version=2011,arch=#{arch.name},type=distrib,url=#{public_downloads_url}\n"
+  #    File.open(File.join(path, "#{name}.#{arch.name}.list"), 'w') {|f| f.write(str) }
+  #  end
+  #end
 
   def update_owner_relation
     if owner_id_was != owner_id
@@ -272,7 +262,7 @@ class Platform < ActiveRecord::Base
       next false unless product
       pbl = product.product_build_lists.for_status(ProductBuildList::BUILD_COMPLETED).recent.first
       next false unless pbl
-      result = pbl.results.find{ |r| r['file_name'] =~ /-#{arch}.tar.gz$/ }
+      result = pbl.results.find{ |r| r['file_name'] =~ /-#{arch}.tar.(gz|xz)$/ }
       result.present? ? result['sha1'] : false
     end
   end
@@ -315,8 +305,8 @@ class Platform < ActiveRecord::Base
     end
 
     def notify_users
-      users = members.includes(:notifier).select{ |u| u.notifier.can_notify? }
-      users.each{ |u| UserMailer.metadata_regeneration_notification(self, u).deliver }
+      #users = members.includes(:notifier).select{ |u| u.notifier.can_notify? }
+      #users.each{ |u| UserMailer.metadata_regeneration_notification(self, u).deliver }
     end
 
 end

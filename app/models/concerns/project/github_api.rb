@@ -4,25 +4,25 @@ module Project::GithubApi
   extend ActiveSupport::Concern
 
   def github_data
-      Github.repos.get user: github_get_organization, repo: name rescue nil
+      Octokit.repo github_get_organization + '/' + name rescue {}
   end
 
   def github_branches
-      Github.repos.branches user: github_get_organization, repo: name rescue nil
+      Octokit.branches github_get_organization + '/' + name rescue []
   end
 
   def github_tags
-      Github.repos.tags user: github_get_organization, repo: name rescue nil
+      Octokit.tags github_get_organization + '/' + name rescue []
   end
 
-  def find_blob_and_raw_of_spec_file(project_version)
-
+  def github_last_commit(branch = nil)
+    if branch.present?
+      Octokit.commits github_get_organization + '/' + name, sha: branch, per_page: 1 rescue []
+    else
+      Octokit.commits github_get_organization + '/' + name, per_page: 1 rescue []
+    end
   end
 
-  def update_file(path, data, options = {})
-    
-  end
-  
   def github_get_organization
     return github_organization if github_organization.presence
     APP_CONFIG['github_organization']

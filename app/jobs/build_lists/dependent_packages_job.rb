@@ -1,8 +1,8 @@
 module BuildLists
   class DependentPackagesJob
-    @queue = :middle
+    #sidekiq_options :queue => :middle
 
-    def self.perform(build_list_id, user_id, project_ids, arch_ids, options)
+    def perform(build_list_id, user_id, project_ids, arch_ids, options)
       build_list  = BuildList.find(build_list_id)
       return if build_list.save_to_platform.personal?
       user        = User.find(user_id)
@@ -31,7 +31,6 @@ module BuildLists
           bl.include_repos       |= [save_to_repository.id]
           %i(
             build_for_platform_id
-            update_type
             save_to_platform_id
             extra_build_lists
             extra_params

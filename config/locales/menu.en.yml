@@ -3,22 +3,26 @@ en:
     repositories: Repositories
     personal_repository: My repository
     products: Products
+  top_menu_labels:
+    navigation: navigation
+    account: account
   top_menu:
-    platforms: Platforms
     projects: Projects
-    build_lists: Task monitoring
+    build_lists: Build Lists
+    product_build_lists: Product Build Lists
+    platforms: Platforms
     groups: Groups
-    advisories: Advisories
     statistics: Statistics
   bottom_menu:
     copyright: OMV © %{year}
-    about: About the company
+    about: About
     about_url: https://www.openmandriva.org/About?lang=en
     contacts: Contacts
     contacts_url: https://www.openmandriva.org/Join-contribute?lang=en
     tos: Terms Of Service
     support: Support
   project_menu:
+    github: To Github
     project: Project
     files: Files
     commits: Commits

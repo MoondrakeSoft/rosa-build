@@ -4,11 +4,11 @@ ru:
     repositories: Репозитории
     personal_repository: Мой репозиторий
   top_menu:
-    platforms: Платформы
     projects: Проекты
-    build_lists: Мониторинг задач
+    build_lists: Билды
+    product_build_lists: ISO Билды
+    platforms: Платформы
     groups: Группы
-    advisories: Бюллетени
     statistics: Статистика
   bottom_menu:
     copyright: OMV © %{year}
@@ -19,6 +19,7 @@ ru:
     tos: Условия использования
     support: Служба поддержки
   project_menu:
+    github: На Github
     project: Проект
     files: Файлы
     commits: Коммиты

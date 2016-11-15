@@ -1,6 +1,8 @@
 class Api::V1::BaseController < ApplicationController
   include PaginateHelper
   respond_to :json
+  skip_before_action :verify_authenticity_token
+  before_action :check_auth
 
   helper_method :member_path
 
@@ -12,6 +14,14 @@ class Api::V1::BaseController < ApplicationController
   end
 
   protected
+
+  def check_auth
+    authenticate_or_request_with_http_basic do |username,pw|
+      if user = User.auth_by_token_or_login_pass(username, pw)
+        sign_in user, store: false
+      end
+    end
+  end
 
   def set_csv_file_headers(file_name)
     headers['Content-Type'] = 'text/csv'

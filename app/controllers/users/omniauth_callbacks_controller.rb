@@ -1,13 +1,5 @@
 class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
 
-  def facebook
-    oauthorize 'Facebook'
-  end
-
-  def google_oauth2
-    oauthorize 'google_oauth2'
-  end
-
   def github
     oauthorize 'GitHub'
   end
@@ -38,12 +30,10 @@ class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
         authentication.user = current_user
       else # Register new user from session
         case provider
-        when 'facebook'
-          name  = auth['extra']['raw_info']['name']
-        when 'google_oauth2', 'github'
+        when 'github'
           name = auth['info']['nickname'] || auth['info']['name']
         else
-          raise 'Provider #{provider} not handled'
+          raise ActiveRecord::RecordNotFound
         end
         user = User.find_or_initialize_by email: auth['info']['email']
         if user.new_record?

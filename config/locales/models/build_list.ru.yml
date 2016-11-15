@@ -15,12 +15,14 @@ ru:
         use_extra_tests: Использовать дополнительные тесты
         save_buildroot: Сохранить RPM build root
         container_path: Путь до контейнера
+        native_build: Нативная сборка
         status: Статус
         project_id: Проект
         project: Проект
         arch_id: Архитектура
         arch: Архитектура
         hostname: Хост
+        fail_reason: Причина провала сборки
         arch_short: Архит-ра
         new_core: Новое ядро
         is_circle: Циклическая сборка
@@ -118,9 +120,6 @@ ru:
 
       human_current_duration: Сборка длится уже %{hours} ч. %{minutes} мин.
       human_duration: Собрано за %{hours} ч. %{minutes} мин.
-
-      attached_advisory: Связанный бюллетень
-      create_advisory: Создать новый бюллетень
 
       ownership:
         header: Принадлежность заданий

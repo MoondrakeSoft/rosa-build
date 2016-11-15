@@ -19,7 +19,7 @@ module AbfWorkerService
     def self.build_rpms(testing = false)
       available_repos = BuildList.
         select('MIN(updated_at) as min_updated_at, save_to_repository_id, build_for_platform_id').
-        where(new_core: true, status: (testing ? BuildList::BUILD_PUBLISH_INTO_TESTING : BuildList::BUILD_PUBLISH)).
+        where(status: (testing ? BuildList::BUILD_PUBLISH_INTO_TESTING : BuildList::BUILD_PUBLISH)).
         group(:save_to_repository_id, :build_for_platform_id).
         order('min_updated_at ASC').
         limit(WORKERS_COUNT * 2) # because some repos may be locked
@@ -206,8 +206,8 @@ module AbfWorkerService
     end
 
     def push(options)
-      Resque.push(
-        'publish_worker_default',
+      Sidekiq::Client.push(
+        'queue' => 'publish_worker_default',
         'class' => 'AbfWorker::PublishWorkerDefault',
         'args'  => [options]
       )
@@ -226,7 +226,7 @@ module AbfWorkerService
     def build_lists
       @build_lists ||= begin
         build_lists = BuildList.
-          where(new_core: true, status: (testing ? BuildList::BUILD_PUBLISH_INTO_TESTING : BuildList::BUILD_PUBLISH)).
+          where(status: (testing ? BuildList::BUILD_PUBLISH_INTO_TESTING : BuildList::BUILD_PUBLISH)).
           where(save_to_repository_id: save_to_repository_id).
           where(build_for_platform_id: build_for_platform_id).
           order(:updated_at)

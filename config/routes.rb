@@ -1,3 +1,6 @@
+require 'sidekiq/web'
+require 'sidekiq-scheduler/web'
+
 Rails.application.routes.draw do
 
   # ActiveAdmin routes.
@@ -5,12 +8,10 @@ Rails.application.routes.draw do
 
   namespace :admin do
     constraints Rosa::Constraints::AdminAccess do
-      mount Resque::Server => 'resque'
+      mount Sidekiq::Web => 'sidekiq'
     end
   end
 
-  # Redirect sitemap1.xml.gz file on AWS S3
-  match '/sitemap.xml.gz' => 'sitemap#show', via: [:get, :post, :head], as: :sitemap
   match '/robots.txt' => 'sitemap#robots', via: [:get, :post, :head], as: :robots
 
   resources :statistics, only: [:index]
@@ -21,8 +22,8 @@ Rails.application.routes.draw do
 
   devise_scope :user do
     get '/users/auth/:provider' => 'users/omniauth_callbacks#passthru'
-    get 'users/sign_up' => 'users/registrations#new',    as: :new_user_registration
-    post 'users'        => 'users/registrations#create', as: :user_registration
+    get 'users/sign_up'         => 'users/registrations#new',    as: :new_user_registration
+    post 'users'                => 'users/registrations#create', as: :user_registration
   end
 
   devise_for :users, controllers: {
@@ -32,7 +33,6 @@ Rails.application.routes.draw do
 
   namespace :api do
     namespace :v1, constraints: { format: 'json' }, defaults: { format: 'json' } do
-      resources :advisories, only: [:index, :show, :create, :update]
       resources :search, only: [:index]
       resources :build_lists, only: [:index, :create, :show] do
         member {
@@ -76,23 +76,12 @@ Rails.application.routes.draw do
       resources :projects, only: [:index, :show, :update, :create, :destroy] do
         collection { get :get_id }
         member {
-          post   :fork
-          post   :alias
-          get    :refs_list
           get    :members
           put    :add_member
           delete :remove_member
           put    :update_member
         }
         resources :build_lists, only: :index
-        resources :issues, only: [:index, :create, :show, :update]
-        resources :pull_requests, only: [:index, :create, :show, :update] do
-          member {
-            get :commits
-            get :files
-            put :merge
-          }
-        end
       end
       resources :users, only: [:show]
       get 'user' => 'users#show_current_user'
@@ -100,8 +89,6 @@ Rails.application.routes.draw do
         member {
           get :notifiers
           put :notifiers
-          get '/issues' => 'issues#user_index'
-          get '/pull_requests' => 'pull_requests#user_index'
         }
       end
       resources :groups, only: [:index, :show, :update, :create, :destroy] do
@@ -110,8 +97,6 @@ Rails.application.routes.draw do
           put :add_member
           delete :remove_member
           put :update_member
-          get '/issues' => 'issues#group_index'
-          get '/pull_requests' => 'pull_requests#group_index'
         }
       end
       resources :products, only: [:show, :update, :create, :destroy] do
@@ -131,9 +116,6 @@ Rails.application.routes.draw do
         end
       end
 
-      #resources :ssh_keys, only: [:index, :create, :destroy]
-      get 'issues' => 'issues#all_index'
-      get 'pull_requests' => 'pull_requests#all_index'
     end
   end
 
@@ -141,29 +123,23 @@ Rails.application.routes.draw do
 
   get  '/forbidden'        => 'pages#forbidden',      as: 'forbidden'
   get  '/terms-of-service' => 'pages#tos',            as: 'tos'
-  get  '/tour/:id'         => 'pages#tour_inside',    as: 'tour_inside', id: /projects|sources|builds/
-  #match '/invite.html'     => redirect('/register_requests/new')
 
+  get '/activity.:format'       => 'home#activity',     as: 'activity_feeds', format: /json/
   get '/activity_feeds.:format' => 'home#activity',     as: 'atom_activity_feeds', format: /atom/
-  get '/own_activity'           => 'home#own_activity', as: 'own_activity'
-  get '/issues'                 => 'home#issues'
-  get '/pull_requests'          => 'home#pull_requests'
-  get '/get_owners_list'        => 'home#get_owners_list'
-  get '/get_project_names_list' => 'home#get_project_names_list'
+  get '/own_activity.:format'   => 'home#own_activity', as: 'own_activity', format: /json/
 
   if APP_CONFIG['anonymous_access']
     authenticated do
-      root to: 'home#activity'
+      root to: 'home#index'
     end
     unauthenticated do
-      root to: 'home#root', as: :authenticated_root
+      root to: 'statistics#index', as: :unauthenticated_root
+      #devise_scope :user do
+      #  root to: 'devise/sessions#new', as: :unauthenticated_root
+      #end
     end
   else
-    root to: 'home#activity'
-  end
-
-  resources :advisories, only: [:index, :show, :search] do
-    get :search, on: :collection
+    root to: 'home#index'
   end
 
   scope module: 'platforms' do
@@ -177,7 +153,6 @@ Rails.application.routes.draw do
         post   :change_visibility
         post   :add_member
         post   :make_clone
-        get    :advisories
       end
 
       resources :contents, only: %i(index) do
@@ -190,15 +165,15 @@ Rails.application.routes.draw do
         member do
           post   :cancel
           post   :publish
+          get 'show_fail_reason(/:page)' => 'mass_builds#show_fail_reason', as: :show_fail_reason, page: /[0-9]+/, defaults: { page: '1' }
           get '/:kind' => "mass_builds#get_list", as: :get_list, kind: /failed_builds_list|missed_projects_list|projects_list|tests_failed_builds_list|success_builds_list/
         end
       end
 
-      resources :repositories do
+      resources :repositories, only: [:create, :new, :show, :edit, :update] do
         member do
-          get     :add_project
+          get     :manage_projects
           put     :add_project
-          get     :remove_project
           delete  :remove_project
           get     :projects_list
           delete  :remove_members
@@ -220,7 +195,10 @@ Rails.application.routes.draw do
             put :cancel
           }
         end
-        collection { get :autocomplete_project }
+        collection {
+          get :autocomplete_project
+          get :project_versions
+        }
       end
       resources :maintainers, only: [:index]
     end
@@ -239,9 +217,6 @@ Rails.application.routes.draw do
   end
 
   scope module: 'users' do
-    get '/settings/ssh_keys'            => 'ssh_keys#index', as: :ssh_keys
-    post '/settings/ssh_keys'           => 'ssh_keys#create'
-    delete '/settings/ssh_keys/:id' => 'ssh_keys#destroy', as: :ssh_key
 
     resources :settings, only: [] do
       collection do
@@ -256,7 +231,6 @@ Rails.application.routes.draw do
         put :reset_auth_token
       end
     end
-    #resources :register_requests, only: [:new, :create], format: /ru|en/ #view support only two languages
 
     get '/allowed'  => 'users#allowed'
     get '/check'    => 'users#check'
@@ -288,44 +262,27 @@ Rails.application.routes.draw do
         patch :publish
         put :reject_publish
         put :publish_into_testing
-        put :update_type
         get :dependent_projects
         post :dependent_projects
       end
     end
 
-    resources :projects, only: [:index, :new, :create] do
-      collection do
-        post  :run_mass_import
-        get   :mass_import
-        post  :run_mass_create
-        get   :mass_create
-      end
-    end
+    resources :projects, only: [:index, :new, :create]
+
     scope '*name_with_owner', name_with_owner: Project::OWNER_AND_NAME_REGEXP do # project
       scope as: 'project' do
-        resources :build_lists, only: [:index, :new, :create] do
-          get :list, on: :collection
-        end
-        resources :collaborators do
-          get :find, on: :collection
-        end
-        post '/preview' => 'projects#preview', as: 'md_preview'
-        post 'refs_list' => 'projects#refs_list', as: 'refs_list'
+        resources :build_lists, only: [:index, :new, :create]
         put 'schedule' => 'projects#schedule'
       end
 
       # Resource
       get '/autocomplete_maintainers' => 'projects#autocomplete_maintainers', as: :autocomplete_maintainers
       get '/modify' => 'projects#edit', as: :edit_project
-      patch '/' => 'projects#update'
+      patch '/' => 'projects#update', as: :project
       delete '/' => 'projects#destroy'
-      # Member
-      delete '/remove_user' => 'projects#remove_user', as: :remove_user_project
 
-      get '/' => 'project/project#index', as: :project
-      get '/commit/:sha' => 'project/project#commit', as: :commit
-      get '/diff/:diff' => 'project/project#diff', as: :diff, format: false, diff: /.*/
+      get '/commit/:sha' => 'projects#commit', as: :commit
+      get '/diff/:diff' => 'projects#diff', as: :diff, format: false, diff: /.*/
     end
   end
 

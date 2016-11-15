@@ -1,7 +1,9 @@
 class CleanApiDefenderStatisticsJob
-  @queue = :low
+  include Sidekiq::Worker
 
-  def self.perform
+  sidekiq_options :queue => :low
+
+  def perform
     deadline = Date.today - 1.month
     Redis.current.keys.select do |key|
       next if key !~ /^throttle:/

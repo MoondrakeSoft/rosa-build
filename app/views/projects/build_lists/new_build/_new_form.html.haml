@@ -30,10 +30,6 @@
                       name:         'arches[]' }
               {{ arch.name }}
 
-          %h4.offset10= t 'activerecord.attributes.build_list.update_type'
-          - selected = params[:build_list].try(:[], :update_type) ? {selected: params[:build_list][:update_type]} : {}
-          = f.select :update_type, BuildList::UPDATE_TYPES, selected, class: 'form-control boffset10'
-
           %div{ 'ng-hide' => 'newBuildCtrl.is_build_for_main_platform' }
             = render 'shared/autocomplete_form',
                      field:       :ExtraRepositories,
@@ -53,8 +49,8 @@
 
           = hidden_field_tag :from_build_list_id, params[:build_list_id] if params[:build_list_id].present?
 
-        .col-xs-12.col-sm-8.col-sm-offset-2
-          %hr
+      .row.top-space
+        .pull-right
           = button_tag type: :submit,
               data: {'disable-with' => t('layout.processing')},
               class: 'btn btn-primary btn-lg btn-block' do

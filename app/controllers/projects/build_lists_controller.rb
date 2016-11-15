@@ -84,7 +84,7 @@ class Projects::BuildListsController < Projects::BaseController
     else
       BuildList.where(id: build_lists.map(&:id)).update_all(group_id: build_lists[0].id) if build_lists.size > 1
       flash[:notice] = notices.join('<br>').html_safe
-      redirect_to project_build_lists_path(@project)
+      redirect_to project_build_lists_path(@project.name_with_owner)
     end
   end
 
@@ -93,28 +93,6 @@ class Projects::BuildListsController < Projects::BaseController
   end
 
   def publish
-    @build_list.update_type = params[:build_list][:update_type] if params[:build_list][:update_type].present?
-
-    if params[:attach_advisory].present? and params[:attach_advisory] != 'no' and !@build_list.advisory
-
-      unless @build_list.update_type.in? BuildList::RELEASE_UPDATE_TYPES
-        redirect_to :back, notice: t('layout.build_lists.publish_fail') and return
-      end
-
-      if params[:attach_advisory] == 'new'
-        # create new advisory
-        unless @build_list.associate_and_create_advisory(advisory_params)
-          redirect_to :back, notice: t('layout.build_lists.publish_fail') and return
-        end
-      else
-        # attach existing advisory
-        a = Advisory.find_by(advisory_id: params[:attach_advisory])
-        unless (a && a.attach_build_list(@build_list))
-          redirect_to :back, notice: t('layout.build_lists.publish_fail') and return
-        end
-      end
-    end
-
     @build_list.publisher = current_user
     do_and_back(:publish, 'publish_')
   end
@@ -126,9 +104,9 @@ class Projects::BuildListsController < Projects::BaseController
         project_ids = prs[:projects].select{ |k, v| v == '1'  }.keys
         arch_ids    = prs[:arches].  select{ |k, v| v == '1'  }.keys
 
-        Resque.enqueue(
-          BuildLists::DependentPackagesJob,
-          @build_list.id,
+        Sidekiq::Client.push(
+          'class' => BuildLists::DependentPackagesJob,
+          'args'  => [@build_list.id,
           current_user.id,
           project_ids,
           arch_ids,
@@ -138,7 +116,7 @@ class Projects::BuildListsController < Projects::BaseController
             include_testing_subrepository:  prs[:include_testing_subrepository],
             use_cached_chroot:              prs[:use_cached_chroot],
             use_extra_tests:                prs[:use_extra_tests]
-          }
+          }]
         )
         flash[:notice] = t('flash.build_list.dependent_projects_job_added_to_queue')
         redirect_to build_list_path(@build_list)
@@ -175,41 +153,10 @@ class Projects::BuildListsController < Projects::BaseController
     }
   end
 
-  def list
-    @build_lists = @project.build_lists
-    @build_lists = @build_lists.where(user_id: current_user) if params[:owner_filter] == 'true'
-    @build_lists = @build_lists.where(status: [BuildList::BUILD_ERROR, BuildList::FAILED_PUBLISH, BuildList::REJECTED_PUBLISH]) if params[:status_filter] == 'true'
-
-    @total_build_lists = @build_lists.count
-
-    @build_lists = @build_lists.recent.paginate(page: current_page)
-
-    render partial: 'build_lists_ajax', layout: false
-  end
-
-  def update_type
-    respond_to do |format|
-      format.html { render nothing: true }
-      format.json do
-        @build_list.update_type = params[:update_type]
-        if @build_list.save
-          render json: 'success', status: :ok
-        else
-          render json: { message: @build_list.errors.full_messages.join('. ') },
-                 status: :unprocessable_entity
-        end
-      end
-    end
-  end
-
   protected
 
   def build_list_params
     subject_params(BuildList)
-  end
-
-  def advisory_params
-    permit_params(%i(build_list advisory), *policy(Advisory).permitted_attributes)
   end
 
   # Private: before_action hook which loads BuidList.

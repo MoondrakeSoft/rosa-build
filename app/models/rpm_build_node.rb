@@ -12,6 +12,8 @@ class RpmBuildNode < Ohm::Model
   attribute :worker_count
   attribute :busy_workers
   attribute :system
+  attribute :host
+  attribute :query_string
 
   def user
     User.where(id: user_id).first

@@ -17,21 +17,11 @@ class BuildList < ActiveRecord::Base
   belongs_to :user
   belongs_to :builder,    class_name: 'User'
   belongs_to :publisher,  class_name: 'User'
-  belongs_to :advisory
   belongs_to :mass_build, counter_cache: true
   has_many :items, class_name: '::BuildList::Item', dependent: :destroy
   has_many :packages, class_name: '::BuildList::Package', dependent: :destroy
   has_many :source_packages, -> { where(package_type: 'source') }, class_name: '::BuildList::Package'
 
-  UPDATE_TYPES = [
-    UPDATE_TYPE_BUGFIX      = 'bugfix',
-    UPDATE_TYPE_SECURITY    = 'security',
-    UPDATE_TYPE_ENHANCEMENT = 'enhancement',
-    UPDATE_TYPE_RECOMMENDED = 'recommended',
-    UPDATE_TYPE_NEWPACKAGE  = 'newpackage'
-  ]
-
-  RELEASE_UPDATE_TYPES = [UPDATE_TYPE_BUGFIX, UPDATE_TYPE_SECURITY]
   EXTRA_PARAMS = %w[cfg_options cfg_urpm_options build_src_rpm build_rpm]
 
   AUTO_PUBLISH_STATUSES = [
@@ -51,10 +41,6 @@ class BuildList < ActiveRecord::Base
 
   validates_numericality_of :priority, greater_than_or_equal_to: 0
   validates :auto_publish_status, inclusion: { in: AUTO_PUBLISH_STATUSES }
-  validates :update_type, inclusion: UPDATE_TYPES,
-            unless: Proc.new { |b| b.advisory.present? }
-  validates :update_type, inclusion: { in: RELEASE_UPDATE_TYPES, message: I18n.t('flash.build_list.frozen_platform') },
-            if: Proc.new { |b| b.advisory.present? }
   validate -> {
     if save_to_platform.try(:main?) && save_to_platform_id != build_for_platform_id
       errors.add(:build_for_platform, I18n.t('flash.build_list.wrong_platform'))
@@ -183,10 +169,6 @@ class BuildList < ActiveRecord::Base
 
   state_machine :status, initial: :waiting_for_response do
 
-    #after_transition(on: [:place_build, :rerun_tests]) do |build_list, transition|
-      #build_list.add_job_to_abf_worker_queue if build_list.external_nodes.blank?
-    #end
-
     after_transition on: :published,
       do: %i(set_version_and_tag actualize_packages)
     after_transition on: :publish, do: :set_publisher
@@ -299,9 +281,6 @@ class BuildList < ActiveRecord::Base
     end
   end
 
-  later :publish, queue: :middle
-  later :add_job_to_abf_worker_queue, queue: :middle
-
   HUMAN_CONTAINER_STATUSES = { WAITING_FOR_RESPONSE => :waiting_for_publish,
                                BUILD_PUBLISHED => :container_published,
                                BUILD_PUBLISH => :container_publish,
@@ -337,12 +316,13 @@ class BuildList < ActiveRecord::Base
   end
 
   def set_version_and_tag
-    pkg = self.packages.where(package_type: 'source', project_id: self.project_id).first
+    #TODO FIX THIS
+    #pkg = self.packages.where(package_type: 'source', project_id: self.project_id).first
     # TODO: remove 'return' after deployment ABF kernel 2.0
-    return if pkg.nil? # For old client that does not sends data about packages
-    self.package_version = "#{pkg.platform.name}-#{pkg.version}-#{pkg.release}"
-    system("cd #{self.project.repo.path} && git tag #{self.package_version} #{self.commit_hash}") # TODO REDO through grit
-    save
+    #return if pkg.nil? # For old client that does not sends data about packages
+    #self.package_version = "#{pkg.platform.name}-#{pkg.version}-#{pkg.release}"
+    #system("cd #{self.project.repo.path} && git tag #{self.package_version} #{self.commit_hash}") # TODO REDO through grit
+    #save
   end
 
   def actualize_packages
@@ -383,27 +363,6 @@ class BuildList < ActiveRecord::Base
     build_started? || build_pending?
   end
 
-  # Comparison between versions of current and last published build_list
-  # @return [Boolean]
-  # - false if no new packages
-  # - false if version of packages is less than version of pubished packages.
-  # - true if version of packages is equal to version of pubished packages (only if platform is not released or platform is RHEL).
-  # - true if version of packages is greater than version of pubished packages.
-  def has_new_packages?
-    if last_bl = last_published.joins(:source_packages).where(build_list_packages: {actual: true}).last
-      source_packages.each do |nsp|
-        sp = last_bl.source_packages.find{ |sp| nsp.name == sp.name }
-        return true unless sp
-        comparison = nsp.rpmEVRcmp(sp)
-        return true if comparison == 1
-        return comparison == 0 && ( !save_to_platform.released? || save_to_platform.distrib_type == 'rhel' )
-      end
-    else
-      return true # no published packages
-    end
-    return false # no new packages
-  end
-
   def auto_publish?
     auto_publish_status == AUTO_PUBLISH_STATUS_DEFAULT
   end
@@ -418,7 +377,7 @@ class BuildList < ActiveRecord::Base
   end
 
   def can_auto_publish?
-    auto_publish? && can_publish? && has_new_packages? && can_publish_into_repository?
+    auto_publish? && can_publish? && can_publish_into_repository?
   end
 
   def can_publish?
@@ -507,25 +466,9 @@ class BuildList < ActiveRecord::Base
     #[WAITING_FOR_RESPONSE, BUILD_PENDING, BUILD_STARTED].include?(status)
   end
 
-  def associate_and_create_advisory(params)
-    build_advisory(params){ |a| a.update_type = update_type }
-    advisory.attach_build_list(self)
-  end
-
-  def can_attach_to_advisory?
-    !save_to_repository.publish_without_qa &&
-      save_to_platform.main? &&
-      save_to_platform.released &&
-      build_published?
-  end
-
   def log(load_lines=nil)
-    if new_core?
-      worker_log = abf_worker_log
-      Pygments.highlight(worker_log, lexer: 'sh') rescue worker_log
-    else
-      I18n.t('layout.build_lists.log.not_available')
-    end
+    worker_log = abf_worker_log
+    Pygments.highlight(worker_log, lexer: 'sh') rescue worker_log
   end
 
   def last_published(testing = false)
@@ -609,65 +552,19 @@ class BuildList < ActiveRecord::Base
     )
   end
 
-  def self.next_build(arch_ids, platform_ids)
-    build_list   = next_build_from_queue(USER_BUILDS_SET, arch_ids, platform_ids)
-    build_list ||= next_build_from_queue(MASS_BUILDS_SET, arch_ids, platform_ids)
-
-    build_list.delayed_add_job_to_abf_worker_queue if build_list
-    build_list
-  end
-
-  def self.next_build_from_queue(set, arch_ids, platform_ids)
-    kind_id = Redis.current.spop(set).to_i
-    key     =
-      case set
-      when USER_BUILDS_SET
-        "user_build_#{kind_id}_rpm_worker_default"
-      when MASS_BUILDS_SET
-        "mass_build_#{kind_id}_rpm_worker"
-      end if kind_id
-
-    task = Resque.pop(key) if key
-
-    if task || Redis.current.llen("resque:queue:#{key}") > 0
-      Redis.current.sadd(set, kind_id.to_s)
-    end
-
-    build_list = BuildList.where(id: task['args'][0]['id']).first if task
-    return unless build_list
-
-    if platform_ids.present? && platform_ids.exclude?(build_list.build_for_platform_id)
-      build_list.restart_job
-      return
-    end
-    if arch_ids.present? && arch_ids.exclude?(build_list.arch_id)
-      build_list.restart_job
-      return
-    end
-
-    build_list
-  end
-
-  def delayed_add_job_to_abf_worker_queue(*args)
-    restart_job if valid? && status == BUILD_PENDING
-  end
-  later :delayed_add_job_to_abf_worker_queue, delay: 60, queue: :middle
-
   def valid_branch_for_publish?
     @valid_branch_for_publish ||= begin
       save_to_platform.personal?                                                ||
       save_to_repository.publish_builds_only_from_branch.blank?                 ||
-      ( project_version == save_to_repository.publish_builds_only_from_branch ) ||
-      project.repo.git.native(:branch, {}, '--contains', commit_hash).
-        gsub(/\*/, '').split(/\n/).map(&:strip).
-        include?(save_to_repository.publish_builds_only_from_branch)
+      ( project_version == save_to_repository.publish_builds_only_from_branch )
+      # TODO: Check branch name for commit hash if all else fails
     end
   end
 
   protected
 
   def create_container
-    Resque.enqueue(BuildLists::CreateContainerJob, id)
+    BuildLists::CreateContainerJob.perform_async(id)
   end
 
   def remove_container
@@ -691,15 +588,14 @@ class BuildList < ActiveRecord::Base
   end
 
   def notify_users
-    unless mass_build_id
-      users = [user, publisher].compact.uniq.select{ |u| u.notifier.can_notify? && u.notifier.new_build? }
+    #unless mass_build_id
+    #  users = [user, publisher].compact.uniq.select{ |u| u.notifier.can_notify? && u.notifier.new_build? }
 
-      # find associated users
-      users |= project.all_members(:notifier).select do |u|
-        u.notifier.can_notify? && u.notifier.new_associated_build?
-      end if project
-      users.each{ |u| UserMailer.build_list_notification(self, u).deliver }
-    end
+    #  users |= project.all_members(:notifier).select do |u|
+    #    u.notifier.can_notify? && u.notifier.new_associated_build?
+    #  end if project
+    #  users.each{ |u| UserMailer.build_list_notification(self, u).deliver }
+    #end
   end # notify_users
 
   def build_package(pkg_hash, package_type, prj)

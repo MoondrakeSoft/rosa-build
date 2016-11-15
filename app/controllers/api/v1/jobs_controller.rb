@@ -8,27 +8,42 @@ class Api::V1::JobsController < Api::V1::BaseController
   skip_after_action :verify_authorized
 
   def shift
+    clear_stale_builders
+    job_shift_sem = Redis::Semaphore.new(:job_shift_lock)
+    job_shift_sem.lock
     uid = BuildList.scoped_to_arch(arch_ids).
       for_status([BuildList::BUILD_PENDING, BuildList::RERUN_TESTS]).
-      for_platform(platform_ids).pluck('DISTINCT user_id').sample
+      for_platform(platform_ids).where(builder: nil).pluck('DISTINCT user_id').sample
 
     if uid
-      build_lists = BuildList.scoped_to_arch(arch_ids).
-        for_status([BuildList::BUILD_PENDING, BuildList::RERUN_TESTS]).
-        for_platform(platform_ids).where(user_id: uid).oldest.order(:created_at)
-
-      ActiveRecord::Base.transaction do
-        if current_user.system?
-          @build_list = build_lists.where(external_nodes: ["", nil]).first
-          @build_list ||= build_lists.external_nodes(:everything).first
-        else
-          @build_list   = build_lists.external_nodes(:owned).for_user(current_user).first
-          @build_list ||= BuildListPolicy::Scope.new(current_user, build_lists).owned.
-            external_nodes(:everything).readonly(false).first
-        end
-        set_builder
+      if native_arch_ids.empty?
+        build_lists = BuildList.scoped_to_arch(arch_ids).for_platform(platform_ids).
+                      where(native_build: false)
+      else
+        sql_normal = []
+        params = []
+        sql_normal << 'arch_id IN (?)' if !arch_ids.empty?
+        params << arch_ids             if !arch_ids.empty?
+        sql_normal << 'native_build=false'
+        sql_normal *= ' AND '
+        sql_native_arch = 'arch_id IN (?)'
+        params << native_arch_ids
+        sql_native_arch << ' AND native_build=true'
+        build_lists = BuildList.where(sql_normal + ' OR ' + sql_native_arch, *params).for_platform(platform_ids)
       end
+      build_lists = build_lists.for_status([BuildList::BUILD_PENDING, BuildList::RERUN_TESTS]).
+                    where(user_id: uid).where(builder: nil).oldest.order(:created_at)
+      if current_user.system?
+        @build_list = build_lists.where(external_nodes: ["", nil]).first
+        @build_list ||= build_lists.external_nodes(:everything).first
+      else
+        @build_list   = build_lists.external_nodes(:owned).for_user(current_user).first
+        @build_list ||= BuildListPolicy::Scope.new(current_user, build_lists).owned.
+          external_nodes(:everything).readonly(false).first
+      end
+      set_builder
     end
+    job_shift_sem.unlock
 
     job = {
       worker_queue: @build_list.worker_queue_with_priority(false),
@@ -41,11 +56,13 @@ class Api::V1::JobsController < Api::V1::BaseController
   def statistics
     if params[:uid].present?
       RpmBuildNode.create(
-        id:           params[:uid],
-        user_id:      current_user.id,
-        system:       current_user.system?,
-        worker_count: params[:worker_count],
-        busy_workers: params[:busy_workers]
+        id:                  params[:uid],
+        user_id:             current_user.id,
+        system:              current_user.system?,
+        worker_count:        params[:worker_count],
+        busy_workers:        params[:busy_workers],
+        host:                params[:host],
+        query_string:        params[:query_string].to_s
       ) rescue nil
     end
     render nothing: true
@@ -74,7 +91,7 @@ class Api::V1::JobsController < Api::V1::BaseController
     if QUEUES.include?(worker_queue) && QUEUE_CLASSES.include?(worker_class)
       worker_args = (params[:worker_args] || []).first || {}
       worker_args = worker_args.merge(feedback_from_user: current_user.id)
-      Resque.push worker_queue, 'class' => worker_class, 'args' => [worker_args]
+      Sidekiq::Client.push 'queue' => worker_queue, 'class' => worker_class, 'args' => [worker_args]
       render nothing: true
     else
       render nothing: true, status: 403
@@ -82,6 +99,14 @@ class Api::V1::JobsController < Api::V1::BaseController
   end
 
   protected
+
+  def clear_stale_builders
+    BuildList.transaction do
+      BuildList.where(["updated_at < ?", 120.seconds.ago]).where(status: BuildList::BUILD_PENDING).where.not(builder: nil).find_each(batch_size: 50) do |bl|
+        bl.update_column(:builder_id, nil)
+      end
+    end
+  end
 
   def platform_ids
     @platform_ids ||= begin
@@ -94,6 +119,15 @@ class Api::V1::JobsController < Api::V1::BaseController
     @arch_ids ||= begin
       arches = params[:arches].to_s.split(',')
       arches.present? ? Arch.where(name: arches).pluck(:id) : []
+    end
+  end
+
+  def native_arch_ids
+    @native_arch_ids ||= begin
+      arches = params[:arches].to_s.split(',')
+      native_arches = params[:native_arches].to_s.split(',')
+      native_arches &= arches if !arches.empty?
+      native_arches.present? ? Arch.where(name: native_arches).pluck(:id) : []
     end
   end
 

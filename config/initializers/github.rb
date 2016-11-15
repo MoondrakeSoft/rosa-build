@@ -1,12 +1,14 @@
 #configuration of Github api gem
 
-Github.configure do |c|
-  c.basic_auth = ENV["GITHUB_LOGIN"] + ":" + ENV["GITHUB_PASSWORD"]
-  c.auto_pagination = true
-  c.stack do |builder|
-    builder.use Faraday::HttpCache, store: Rails.cache
-  end
-end
+Github_blobs_api = Octokit::Client.new(login: ENV['GITHUB_REPO_BOT_LOGIN'], password: ENV['GITHUB_REPO_BOT_PASSWORD'])
 
-#for updating repo contents
-Github_blobs_api = Github::Client::Repos::Contents.new(basic_auth: ENV['GITHUB_REPO_BOT_LOGIN'] + ":" + ENV['GITHUB_REPO_BOT_PASSWORD'])
+Octokit.configure do |c|
+  c.login = ENV["GITHUB_LOGIN"]
+  c.password = ENV["GITHUB_PASSWORD"]
+end
+Octokit.middleware = Faraday::RackBuilder.new do |builder|
+  store = ActiveSupport::Cache.lookup_store(:redis_store, ENV['REDIS_URL'].to_s + '/1')
+  builder.use Faraday::HttpCache, store: store, shared_cache: false, serializer: Marshal
+  builder.use Octokit::Response::RaiseError
+  builder.adapter Faraday.default_adapter
+end

@@ -12,6 +12,7 @@ en:
         extra_mass_builds: Extra mass builds
         auto_create_container: Create container automatically
         use_cached_chroot: Use cached chroot
+        native_build: Native build
         use_extra_tests: Use extra tests
         save_buildroot: Save RPM build root
         container_path: Container path
@@ -22,6 +23,7 @@ en:
         arch_short: Arch
         arch: Architecture
         hostname: Hostname
+        fail_reason: Fail reason
         new_core: New core
         is_circle: Recurrent build
         updated_at: Notified at
@@ -120,9 +122,6 @@ en:
 
       human_current_duration: Build currently takes %{hours} h. %{minutes} min.
       human_duration: Built in %{hours} h. %{minutes} min.
-
-      attached_advisory: Attached advisory
-      create_advisory: Create new advisory
 
       ownership:
         header: Build list ownership
