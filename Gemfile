@@ -128,7 +128,7 @@ group :development do
   gem 'binding_of_caller'
   gem 'meta_request'
   gem 'localeapp'
-  gem 'skype'
+  #gem 'skype'
   #gem 'ruby-dbus' if RUBY_PLATFORM =~ /linux/i # Error at deploy
   gem 'rack-mini-profiler', require: false
 end
