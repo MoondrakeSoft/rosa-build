@@ -127,7 +127,6 @@ group :development do
   gem 'capistrano-nginx', require: false
   gem 'capistrano-resque', require: false
   #gem 'rvm-capistrano', require: false
-  gem 'cape', require: false
   # Better Errors & RailsPanel
   gem 'better_errors'
   gem 'binding_of_caller'
