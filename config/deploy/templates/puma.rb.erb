@@ -11,7 +11,7 @@ state_path "<%=fetch(:puma_state)%>"
 stdout_redirect '<%=fetch(:puma_access_log)%>', '<%=fetch(:puma_error_log)%>', true
 
 
-threads *(ENV['PUMA_WORKERS'] || '<%=fetch(:puma_threads).join(',')%>').spit(',')
+threads *(ENV['PUMA_WORKERS'] || '<%=fetch(:puma_threads).join(',')%>').split(',')
 
 <%= puma_bind %>
 <% if fetch(:puma_control_app) %>
