@@ -93,7 +93,7 @@ group :development do
   gem 'capistrano-rails', require: false
   gem 'capistrano-rake', require: false
   gem 'capistrano-deploy', require: false
-  gem 'capistrano-nginx', require: false
+  gem 'capistrano3-nginx', require: false
   gem 'capistrano-sidekiq', group: :development
   gem 'capistrano3-puma', require: false
   gem 'io-console', require: false
