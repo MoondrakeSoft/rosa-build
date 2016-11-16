@@ -29,7 +29,7 @@ set :ssh_options, forward_agent: true
 
 # Default value for :linked_files is []
 set :linked_files, fetch(:linked_files, []) + %W(
-  .env
+  .env.local
   .env.#{fetch :rails_env}
   config/database.yml
   config/application.yml
@@ -62,12 +62,12 @@ set :puma_init_active_record, true
 
 namespace :deploy do
 
-  desc "Setup config files (first time config)"
+  desc "Setup config files (first time setup)"
   task :setup do
     on roles(:app) do
       execute "mkdir -p #{shared_path}/config"
       execute "mkdir -p #{shared_path}/tmp/pids"
-      %W(.env .env.#{fetch :rails_env}).each do |dotenv_rails|
+      %W(.env.local .env.#{fetch :rails_env}).each do |dotenv_rails|
 	if File.exists?(dotenv_rails)
 	  upload! dotenv_rails, "#{shared_path}/#{dotenv_rails}"
 	else

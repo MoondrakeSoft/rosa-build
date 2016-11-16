@@ -14,7 +14,7 @@ module Rosa
   class Application < Rails::Application
     # Load default environment configuration variables from '.env.default',
     # that can be overridden in '.env'
-    Dotenv.load(Rails.root.join('.env.default').to_s) unless ENV['NO_DOTENV_CONFIG']
+    Dotenv::Railtie.load unless ENV['NO_DOTENV_CONFIG']
 
     config.i18n.enforce_available_locales = true
 
