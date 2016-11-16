@@ -28,8 +28,9 @@ set :pty, true
 set :ssh_options, forward_agent: true
 
 # Default value for :linked_files is []
-set :linked_files, fetch(:linked_files, []) + %w(
+set :linked_files, fetch(:linked_files, []) + %W(
   .env
+  .env.#{fetch :rails_env}
   config/database.yml
   config/application.yml
   config/newrelic.yml
@@ -52,7 +53,6 @@ set :linked_dirs, fetch(:linked_dirs, []) + %w(
 # Default value for keep_releases is 5
 set :keep_releases, 3
 
-
 set :puma_preload_app, true
 set :puma_threads, [16, 16]
 set :puma_workers, 7
@@ -60,15 +60,20 @@ set :puma_default_control_app, "unix://#{shared_path}/tmp/sockets/pumactl.sock"
 set :puma_conf, "#{shared_path}/config/puma.rb"
 set :puma_init_active_record, true
 
-
 namespace :deploy do
 
-  desc "Setup config files (first time setup)"
+  desc "Setup config files (first time config)"
   task :setup do
     on roles(:app) do
       execute "mkdir -p #{shared_path}/config"
       execute "mkdir -p #{shared_path}/tmp/pids"
-      execute "touch #{shared_path}/.env"
+      %W(.env .env.#{fetch :rails_env}).each do |dotenv_rails|
+	if File.exists?(dotenv_rails)
+	  upload! dotenv_rails, "#{shared_path}/#{dotenv_rails}"
+	else
+	  execute "touch #{shared_path}/#{dotenv_rails}"
+	end
+      end
 
       %w(database application newrelic).each do |config|
 	{
@@ -97,12 +102,16 @@ namespace :deploy do
       end
     end
   end
+
+  after :restart, :clear_cache do
+    on roles(:web), in: :groups, limit: 3, wait: 10 do
+      # Here we can do anything such as:
+      # within release_path do
+      #   execute :rake, 'cache:clear'
+      # end
+    end
+  end
 end
-
-#FIXME
-#after "deploy:finalize_update", "deploy:symlink_all"
-#after "deploy:update_code", "deploy:migrate"
-
 
 # Resque
 #after "deploy:stop",    "resque:stop"
@@ -115,13 +124,11 @@ end
 #after "deploy:restart", "deploy:cleanup"
 #after "deploy:cleanup", "deploy:copy_assets"
 
-
-
 namespace :rake_tasks do
   on roles(:app) do
     within release_path do
       with rails_env: fetch(:rails_env) do
-	execute :rake, 'db:seeds'
+       execute :rake, 'db:seeds'
       end
     end
   end
