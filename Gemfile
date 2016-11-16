@@ -48,17 +48,12 @@ gem 'ng-rails-csrf'
 gem 'angular-i18n'
 gem 'js-routes'
 gem 'soundmanager-rails'
-gem 'angular-ui-bootstrap-rails'
-gem 'angular-rails-templates'
 gem 'ngannotate-rails'
 
 gem 'time_diff'
 
 gem 'sass-rails'
 gem 'coffee-rails'
-gem 'bootstrap-sass'
-gem 'font-awesome-rails'
-gem 'zeroclipboard-rails'
 gem 'dotenv-rails'
 
 gem 'compass-rails'
@@ -66,7 +61,7 @@ gem 'uglifier'
 gem 'therubyracer', platforms: [:mri, :rbx]
 gem 'therubyrhino', platforms: :jruby
 
-source 'http://rails-assets.org'do
+source 'https://rails-assets.org' do
   gem 'rails-assets-notifyjs'
 end
 
