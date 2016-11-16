@@ -2,7 +2,7 @@
 
 directory '<%= current_path %>'
 rackup "<%=fetch(:puma_rackup)%>"
-environment environment ENV['RAILS_ENV'] || '<%= fetch(:puma_env) %>'
+environment ENV['RAILS_ENV'] || '<%= fetch(:puma_env) %>'
 <% if fetch(:puma_tag) %>
   tag '<%= fetch(:puma_tag)%>'
 <% end %>
