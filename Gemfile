@@ -94,7 +94,7 @@ group :development do
   gem 'capistrano-rake', require: false
   gem 'capistrano-deploy', require: false
   gem 'capistrano-nginx', require: false
-  gem 'capistrano-resque', require: false
+  gem 'capistrano-sidekiq', group: :development
   gem 'capistrano3-puma', require: false
   gem 'io-console', require: false
   gem 'state_machines-graphviz'
