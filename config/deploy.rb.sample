@@ -27,6 +27,9 @@ set :rvm_ruby_string, 'ruby-2.2.4'
 set :pty, true
 set :ssh_options, forward_agent: true
 
+# FIXME: workaround for empty :rails_env when symlinking (bug?)
+set :rails_env, 'production' unless fetch(:rails_env)
+
 # Default value for :linked_files is []
 set :linked_files, fetch(:linked_files, []) + %W(
   .env.local
