@@ -433,6 +433,8 @@ GEM
     rufus-scheduler (3.1.10)
     russian (0.6.0)
       i18n (>= 0.5.0)
+    rvm-capistrano (1.5.0)
+      capistrano (>= 2.15.4)
     safe_yaml (1.0.4)
     sass (3.4.22)
     sass-rails (5.0.6)
@@ -666,6 +668,7 @@ DEPENDENCIES
   rspec-rails
   ruby-haml-js
   russian
+  rvm-capistrano
   sass-rails
   schema_plus
   shotgun
