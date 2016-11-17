@@ -91,7 +91,7 @@ group :development do
   gem 'capistrano3-nginx', require: false
   gem 'capistrano-sidekiq', group: :development
   gem 'capistrano3-puma', require: false
-  gem 'rvm-capistrano', require: false
+  gem 'rvm1-capistrano3', require: false
   gem 'io-console', require: false
   gem 'state_machines-graphviz'
   # Better Errors & RailsPanel
