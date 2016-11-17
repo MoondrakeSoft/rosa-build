@@ -14,7 +14,7 @@ set :deploy_to, "/srv/#{fetch :application}"
 # Default value for :scm is :git
 set :scm, :git
 
-set :rvm_ruby_string, 'ruby-2.2.4'
+set :rvm_ruby_string, 'ruby-2.3.2'
 
 # Default value for :format is :airbrussh.
 # set :format, :airbrussh
