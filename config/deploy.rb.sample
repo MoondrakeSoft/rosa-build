@@ -84,59 +84,6 @@ end
 before "rvm1:install:rvm", "app:update_rvm_key"
 
 
-namespace :deploy do
-
-  desc "Setup config files (first time setup)"
-  task :setup do
-    on roles(:app) do
-      execute "mkdir -p #{shared_path}/config"
-      execute "mkdir -p #{shared_path}/tmp/pids"
-      %W(.env.local .env.#{fetch :rails_env}).each do |dotenv_rails|
-	if File.exists?(dotenv_rails)
-	  upload! dotenv_rails, "#{shared_path}/#{dotenv_rails}"
-	else
-	  execute "touch #{shared_path}/#{dotenv_rails}"
-	end
-      end
-
-      %w(database application newrelic).each do |config|
-	{
-	  "config/#{config}.yml.sample" => "config/#{config}.yml"
-	}.each do |src, target|
-	  unless test("[ -f #{shared_path}/#{target} ]")
-	    upload! src, "#{shared_path}/#{target}"
-	  end
-	end
-      end
-    end
-  end
-
-  desc 'Copy compiled assets'
-  task :copy_assets do
-    on roles(:app) do
-      %w(new_application-*.css new_application-*.css.gz new_application-*.js new_application-*.js.gz).each do |f|
-	asset_glob = "#{fetch :shared_path}/assets/#{f}"
-	asset_file = capture %Q{ruby -e "print Dir.glob('#{asset_glob}').max_by { |file| File.mtime(file) }"}
-	puts asset_file
-	if asset_file
-	  run "ln -fs #{asset_file} #{fetch :shared_path}/assets/#{ f.gsub('-*', '') }"
-	else
-	  error "Error #{f} asset does not exist"
-	end
-      end
-    end
-  end
-
-  after :restart, :clear_cache do
-    on roles(:web), in: :groups, limit: 3, wait: 10 do
-      # Here we can do anything such as:
-      # within release_path do
-      #   execute :rake, 'cache:clear'
-      # end
-    end
-  end
-end
-
 # Resque
 #after "deploy:stop",    "resque:stop"
 #after "resque:stop",    "resque:scheduler:stop"
@@ -155,35 +102,5 @@ namespace :rake_tasks do
        execute :rake, 'db:seed'
       end
     end
-  end
-end
-
-namespace :update do
-  desc "Copy remote production shared files to localhost"
-  task :shared do
-    run_locally "rsync --recursive --times --rsh=ssh --compress --human-readable --progress #{user}@#{domain}:#{shared_path}/shared_contents/uploads public/uploads"
-  end
-
-  desc "Dump remote production postgresql database, rsync to localhost"
-  task :postgresql do
-    get("#{current_path}/config/database.yml", "tmp/database.yml")
-
-    remote_settings = YAML::load_file("tmp/database.yml")[rails_env]
-    local_settings = YAML::load_file("config/database.yml")["development"]
-
-
-    run "export PGPASSWORD=#{remote_settings["password"]} && pg_dump --host=#{remote_settings["host"]} --port=#{remote_settings["port"]} --username #{remote_settings["username"]} --file #{current_path}/tmp/#{remote_settings["database"]}_dump -Fc #{remote_settings["database"]}"
-
-    run_locally "rsync --recursive --times --rsh=ssh --compress --human-readable --progress #{user}@#{domain}:#{current_path}/tmp/#{remote_settings["database"]}_dump tmp/"
-
-    run_locally "dropdb -U #{local_settings["username"]} --host=#{local_settings["host"]} --port=#{local_settings["port"]} #{local_settings["database"]}"
-    run_locally "createdb -U #{local_settings["username"]} --host=#{local_settings["host"]} --port=#{local_settings["port"]} -T template0 #{local_settings["database"]}"
-    run_locally "pg_restore -U #{local_settings["username"]} --host=#{local_settings["host"]} --port=#{local_settings["port"]} -d #{local_settings["database"]} tmp/#{remote_settings["database"]}_dump"
-  end
-
-  desc "Dump all remote data to localhost"
-  task :all do
-    # update.shared
-    update.postgresql
   end
 end
