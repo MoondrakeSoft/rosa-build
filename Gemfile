@@ -14,7 +14,7 @@ gem 'rbtrace'
 gem 'paperclip'
 gem 'sinatra', :require => nil
 gem 'sidekiq'
-gem 'kiqit', :git => 'https://github.com/DuratarskeyK/kiqit.git'
+gem 'kiqit', github: 'DuratarskeyK/kiqit'
 gem 'sidekiq-scheduler', '~> 2.0'
 gem 'sidekiq-failures'
 gem 'russian'
