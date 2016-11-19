@@ -89,7 +89,7 @@ group :development do
   gem 'capistrano-rake', require: false
   gem 'capistrano-deploy', require: false
   gem 'capistrano3-nginx', require: false
-  gem 'capistrano-sidekiq', group: :development
+  gem 'capistrano-sidekiq', require: false, group: :development
   gem 'capistrano3-puma', require: false
   gem 'rvm1-capistrano3', '1.4.0.1', tag: '1.4.0.1', require: false, github: 'MoondrakeSoft/rvm1-capistrano3'
   gem 'io-console', require: false
