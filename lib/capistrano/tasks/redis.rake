@@ -12,6 +12,18 @@ end
 
 namespace :redis do
 
+	desc 'Enable and restart redis service'
+	task :restart do
+		enableargs = :systemctl, 'enable', 'redis'
+		restartargs = :systemctl, 'restart', 'redis'
+		on roles fetch(:redis_roles) do
+			for command in ['enable', 'restart']
+				args = :systemctl, command, 'redis'
+				sudo(*args)
+			end
+		end
+	end
+
 	desc 'Customizes redis configuration to our instance'
 	task :config do
 		arguments = [:sed]
@@ -26,6 +38,6 @@ namespace :redis do
 		on roles fetch(:redis_roles) do
 			sudo(*arguments)
 		end
-
 	end
+
 end
