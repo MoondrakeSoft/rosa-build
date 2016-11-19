@@ -14,7 +14,6 @@ set :deploy_to, "/srv/#{fetch :application}"
 # Default value for :scm is :git
 set :scm, :git
 
-set :rvm_ruby_string, 'ruby-2.3.2'
 
 # Default value for :format is :airbrussh.
 # set :format, :airbrussh
@@ -66,6 +65,24 @@ set :puma_init_active_record, true
 
 require 'etc'
 set :bundle_jobs, Etc.nprocessors
+
+
+set :rvm1_ruby_version, "2.3.2"
+set :rvm1_alias_name, "ruby"
+before 'deploy', 'rvm1:install:rvm'
+before 'deploy', 'rvm1:install:ruby'
+before 'deploy', 'rvm1:alias:create'
+before 'deploy', 'rvm1:install:gems'
+
+namespace :app do
+  task :update_rvm_key do
+    on roles(:app) do
+      execute :gpg, "--keyserver hkp://keys.gnupg.net --recv-keys D39DC0E3"
+    end
+  end
+end
+before "rvm1:install:rvm", "app:update_rvm_key"
+
 
 namespace :deploy do
 
