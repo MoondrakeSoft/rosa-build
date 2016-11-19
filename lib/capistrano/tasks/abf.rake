@@ -1,3 +1,21 @@
+set :pkg_resolver, %w(yum install -y)
+set :pkg_dependencies, %w(
+git-core
+pkgconfig(icu-i18n)
+gcc
+file-devel
+pkgconfig(ruby)
+pkgconfig(libxml-2.0)
+pkgconfig(libxslt)
+pkgconfig(libpq)
+nginx
+postfix
+pkgconfig(python3)
+crontabs
+pkgconfig(openssl)
+openssl
+)
+
 namespace :deploy do
 
   desc "Setup config files (first time setup)"
@@ -49,4 +67,26 @@ namespace :deploy do
       # end
     end
   end
+end
+
+namespace :abf do
+
+	desc 'Initialize environment'
+	task :create_users do
+		on roles(:app) do
+			sudo("install", "-d", '--group=rosa', '--user=rosa', '--mode=755', fetch(:deploy_to))
+			sudo("adduser", "-G", "rosa", "git")
+			sudo("usermod", "-G", "git,redis", "rosa")
+		end
+	end
+
+	desc 'Install system dependencies'
+	task :install_deps do
+		on roles(:app) do
+			args = fetch(:pkg_resolver)
+			args.push(fetch(:pkg_dependencies).map!{ |pkg| "'"+pkg+"'"})
+			sudo(args)
+		end
+	end
+
 end
