@@ -27,10 +27,7 @@ namespace :redis do
 	desc 'Customizes redis configuration to our instance'
 	task :config do
 		arguments = [:sed]
-		config =fetch(:redis_config) 
-		#arguments.push(config["unixsocket"])
-		#arguments.push("#{key}: #{value}")
-		config.each{|key, value|
+		fetch(:redis_config).each{|key, value|
 			key = value.nil? ? "bind 127.0.0.1" : key
 			arguments.push(value.nil? ? "-e 's|^\\(#{key}\\)|# \\1 |g'" : "-e 's|^# \\(#{key}\\) .*|\\1 #{value}|g'")
 		}
