@@ -95,13 +95,3 @@ set :puma_init_active_record, true
 #
 #after "deploy:restart", "deploy:cleanup"
 #after "deploy:cleanup", "deploy:copy_assets"
-
-namespace :rake_tasks do
-  on roles(:app) do
-    within release_path do
-      with rails_env: fetch(:rails_env) do
-       execute :rake, 'db:seed'
-      end
-    end
-  end
-end

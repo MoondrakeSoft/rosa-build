@@ -90,3 +90,17 @@ namespace :abf do
 	end
 
 end
+
+namespace :db do
+
+  desc 'Load the seed data from db/seeds.rb'
+  task :seed do
+    on roles(:app) do
+      within release_path do
+        with rails_env: fetch(:rails_env) do
+          execute :rake, 'db:seed'
+        end
+      end
+    end
+  end
+end
