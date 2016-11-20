@@ -63,8 +63,9 @@ set :puma_default_control_app, "unix://#{shared_path}/tmp/sockets/pumactl.sock"
 set :puma_conf, "#{shared_path}/config/puma.rb"
 set :puma_init_active_record, true
 
-require 'etc'
-set :bundle_jobs, Etc.nprocessors
+#require 'etc'
+# FIXME: get from target host
+#set :bundle_jobs, Etc.nprocessors
 
 
 #set :rvm1_ruby_version, "2.3.2"
