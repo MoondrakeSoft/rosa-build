@@ -71,23 +71,23 @@ end
 
 namespace :abf do
 
-	desc 'Initialize environment'
-	task :create_users do
-		on roles(:app) do
-			sudo("install", "-d", '--group=rosa', '--owner=rosa', '--mode=755', fetch(:deploy_to))
-			sudo("adduser", "-G", "rosa", "git")
-			sudo("usermod", "-G", "git,redis", "rosa")
-		end
-	end
+  desc 'Initialize environment'
+  task :create_users do
+    on roles(:app) do
+      sudo("install", "-d", '--group=rosa', '--owner=rosa', '--mode=755', fetch(:deploy_to))
+      sudo("adduser", "-G", "rosa", "git")
+      sudo("usermod", "-G", "git,redis", "rosa")
+    end
+  end
 
-	desc 'Install system dependencies'
-	task :install_deps do
-		on roles(:app) do
-			args = fetch(:pkg_resolver)
-			args.push(fetch(:pkg_dependencies).map!{ |pkg| "'"+pkg+"'"})
-			sudo(args)
-		end
-	end
+  desc 'Install system dependencies'
+  task :install_deps do
+    on roles(:app) do
+      args = fetch(:pkg_resolver)
+      args.push(fetch(:pkg_dependencies).map!{ |pkg| "'"+pkg+"'"})
+      sudo(args)
+    end
+  end
 
 end
 
