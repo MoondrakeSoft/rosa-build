@@ -15,6 +15,7 @@ pkgconfig(python2)
 crontabs
 pkgconfig(openssl)
 openssl
+redis
 )
 
 namespace :deploy do
