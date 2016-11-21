@@ -1,4 +1,5 @@
 set :pkg_resolver, %w(yum install -y)
+set :pkg_repo_deps, nil
 set :pkg_dependencies, %w(
 git-core
 pkgconfig(icu-i18n)
@@ -83,6 +84,12 @@ namespace :abf do
   desc 'Install system dependencies'
   task :install_deps do
     on roles(:app) do
+      repos = fetch(:pkg_repo_deps)
+      if not repos.nil?
+	args = fetch(:pkg_resolver)
+	args.push(repos.map!{ |pkg| "'"+pkg+"'"})
+	sudo(args)
+      end
       args = fetch(:pkg_resolver)
       args.push(fetch(:pkg_dependencies).map!{ |pkg| "'"+pkg+"'"})
       sudo(args)
