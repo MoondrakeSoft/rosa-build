@@ -7,10 +7,10 @@ file-devel
 pkgconfig(ruby)
 pkgconfig(libxml-2.0)
 pkgconfig(libxslt)
-pkgconfig(libpq)
+postgresql-devel
 nginx
 postfix
-pkgconfig(python3)
+pkgconfig(python2)
 crontabs
 pkgconfig(openssl)
 openssl
@@ -74,7 +74,7 @@ namespace :abf do
 	desc 'Initialize environment'
 	task :create_users do
 		on roles(:app) do
-			sudo("install", "-d", '--group=rosa', '--user=rosa', '--mode=755', fetch(:deploy_to))
+			sudo("install", "-d", '--group=rosa', '--owner=rosa', '--mode=755', fetch(:deploy_to))
 			sudo("adduser", "-G", "rosa", "git")
 			sudo("usermod", "-G", "git,redis", "rosa")
 		end
