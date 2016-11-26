@@ -12,7 +12,7 @@ require 'capistrano/deploy'
 #   https://github.com/capistrano/bundler
 #   https://github.com/capistrano/rails
 #
-#require 'rvm1/capistrano3'
+require 'rvm1/capistrano3'
 require 'capistrano/bundler'
 require 'capistrano/rails/assets'
 require 'capistrano/rails/migrations'
@@ -20,6 +20,7 @@ require 'capistrano/rake'
 require 'capistrano/nginx'
 require 'capistrano/puma'
 require 'capistrano/sidekiq'
+#require 'capistrano/rbenv'
 
 # Load custom tasks from `lib/capistrano/tasks` if you have any defined
 Dir.glob('lib/capistrano/tasks/*.rake').each { |r| import r }
