@@ -4,7 +4,7 @@ namespace :load do
 		set :redis_roles,					-> { 'app' }
 		set :redis_config,				{
 			'bind'									=> nil,
-			'unixsocket' 						=> '/run/redis/redis.sock',
+			'unixsocket' 						=> '/var/run/redis/redis.sock',
 			'unixsocketperm' 				=> '770'
 		}
 	end
