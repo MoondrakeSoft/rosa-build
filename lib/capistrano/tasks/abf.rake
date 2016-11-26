@@ -4,6 +4,7 @@ set :pkg_dependencies, %w(
 git-core
 pkgconfig(icu-i18n)
 gcc
+gcc-c++
 file-devel
 pkgconfig(ruby)
 pkgconfig(libxml-2.0)
