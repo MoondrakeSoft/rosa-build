@@ -6,6 +6,8 @@ pkgconfig(icu-i18n)
 gcc
 gcc-c++
 file-devel
+which
+hostname
 pkgconfig(ruby)
 pkgconfig(libxml-2.0)
 pkgconfig(libxslt)
