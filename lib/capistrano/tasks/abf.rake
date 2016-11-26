@@ -12,6 +12,7 @@ pkgconfig(ruby)
 pkgconfig(libxml-2.0)
 pkgconfig(libxslt)
 postgresql-devel
+postgresql-server
 nginx
 postfix
 pkgconfig(python2)
