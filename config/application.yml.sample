@@ -54,13 +54,14 @@ common: &common
 
 development:
   <<: *common
-  root_path: /share
-  git_path: /share
-  tmpfs_path: /dev/shm
-  do-not-reply-email: do-not-reply@localhost
+  root_path: <%= ENV["ROOT_PATH"] %>
+  git_path: <%= ENV["GIT_PATH"] %>
+  tmpfs_path: <%= ENV["TMPFS_PATH"] %>
+  do-not-reply-email: <%= ENV["DO_NOT_REPLY_EMAIL"] %>
+  mailer_https_url: <%= ENV["MAILER_HTTPS_URL"] %>
   github_services:
-    ip: 127.0.0.1
-    port: 1234
+    ip: <%= ENV["GITHUB_SERVICES_ID"] %>
+    port: <%= ENV["GITHUB_SERVICES_PORT"] %>
 
 production:
   <<: *common
