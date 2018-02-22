@@ -73,7 +73,7 @@ gem "octokit", "~> 4.0"
 gem 'faraday-http-cache'
 
 group :production do
-  gem 'airbrake', '~> 5.6.0'
+  gem 'airbrake'
   gem 'puma'
 end
 
