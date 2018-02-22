@@ -6,7 +6,7 @@ set :application, 'rosa_build'
 set :repo_url, 'git@github.com:MoondrakeSoft/rosa-build.git'
 
 # Default branch is :master
-set :branch, ENV['branch'] || 'proyvind-docker'
+set :branch, ENV['branch'] || 'capistrano'
 
 # Default deploy_to directory is /var/www/my_app_name
 set :deploy_to, "/srv/#{fetch :application}"
