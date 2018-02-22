@@ -93,6 +93,11 @@ group :development do
   gem 'capistrano3-puma', require: false
   #gem 'capistrano-rbenv', requires: false
   gem 'rvm1-capistrano3', '1.4.0.1', tag: '1.4.0.1', require: false, github: 'MoondrakeSoft/rvm1-capistrano3'
+  # net-ssh requires the following gems for ed25519 support:
+  gem 'rbnacl', '>= 3.2', '< 5.0', require: false
+  #gem 'rbnacl-libsodium', require: false
+  gem 'bcrypt_pbkdf', '>= 1.0', '< 2.0', require: false
+
   gem 'io-console', require: false
   gem 'state_machines-graphviz'
   # Better Errors & RailsPanel
