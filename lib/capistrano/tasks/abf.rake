@@ -80,9 +80,12 @@ namespace :abf do
   desc 'Initialize environment'
   task :create_users do
     on roles(:app) do
+      sudo("groupadd", "rosa")
+      sudo("useradd", "-g", "rosa", "rosa")
       sudo("install", "-d", '--group=rosa', '--owner=rosa', '--mode=755', fetch(:deploy_to))
-      sudo("adduser", "-G", "rosa", "git")
-      sudo("usermod", "-G", "git,redis", "rosa")
+      sudo("groupadd", "git")
+      sudo("useradd", "-G", "rosa", "git")
+      sudo("usermod", "-a", "-G", "git,redis", "rosa")
     end
   end
 
