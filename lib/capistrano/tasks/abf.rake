@@ -81,7 +81,7 @@ namespace :abf do
   task :create_users do
     on roles(:app) do
       sudo("groupadd", "rosa")
-      sudo("useradd", "-g", "rosa", "rosa")
+      sudo("useradd", "-m", "-g", "rosa", "rosa")
       sudo("install", "-d", '--group=rosa', '--owner=rosa', '--mode=755', fetch(:deploy_to))
       sudo("groupadd", "git")
       sudo("useradd", "-G", "rosa", "git")
