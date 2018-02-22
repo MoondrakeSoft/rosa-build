@@ -104,7 +104,7 @@ group :development do
   gem 'better_errors'
   gem 'binding_of_caller'
   gem 'meta_request'
-  #gem 'localeapp'
+  gem 'localeapp'
   #gem 'ruby-dbus' if RUBY_PLATFORM =~ /linux/i # Error at deploy
   gem 'rack-mini-profiler', require: false
 end
