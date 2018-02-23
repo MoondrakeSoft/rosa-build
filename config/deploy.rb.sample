@@ -1,6 +1,5 @@
-# config valid only for current version of Capistrano
-lock '3.6.1'
-
+# config valid for current version and patch releases of Capistrano
+lock "~> 3.10.1"
 
 set :application, 'rosa_build'
 set :repo_url, 'git@github.com:MoondrakeSoft/rosa-build.git'
@@ -11,10 +10,6 @@ set :branch, ENV['branch'] || 'capistrano'
 # Default deploy_to directory is /var/www/my_app_name
 set :deploy_to, "/srv/#{fetch :application}"
 
-# Default value for :scm is :git
-set :scm, :git
-
-
 # Default value for :format is :airbrussh.
 # set :format, :airbrussh
 
@@ -24,7 +19,6 @@ set :scm, :git
 
 # Default value for :pty is false
 set :pty, true
-set :ssh_options, forward_agent: true
 
 # FIXME: workaround for empty :rails_env when symlinking (bug?)
 set :rails_env, 'production' unless fetch(:rails_env)
@@ -53,8 +47,14 @@ set :linked_dirs, fetch(:linked_dirs, []) + %w(
 # Default value for default_env is {}
 # set :default_env, { path: "/opt/ruby/bin:$PATH" }
 
+# Default value for local_user is ENV['USER']
+# set :local_user, -> { `git config user.name`.chomp }
+
 # Default value for keep_releases is 5
 set :keep_releases, 3
+
+# Uncomment the following to require manually verifying the host key before first deploy.
+set :ssh_options, forward_agent: true, verify_host_key: :secure
 
 set :puma_preload_app, true
 set :puma_threads, [16, 16]
