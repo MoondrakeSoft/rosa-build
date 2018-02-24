@@ -58,7 +58,7 @@ gem 'dotenv-rails'
 
 gem 'compass-rails'
 gem 'uglifier'
-# not used anyways..?
+gem 'mini_racer'
 #gem 'therubyracer', platforms: [:mri, :rbx]
 #gem 'therubyrhino', platforms: :jruby
 
