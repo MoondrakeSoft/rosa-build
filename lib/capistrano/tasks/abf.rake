@@ -15,7 +15,6 @@ postgresql-devel
 postgresql-server
 nginx
 postfix
-pkgconfig(python2)
 crontabs
 pkgconfig(openssl)
 openssl
