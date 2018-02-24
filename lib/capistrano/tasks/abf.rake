@@ -11,6 +11,7 @@ hostname
 pkgconfig(ruby)
 pkgconfig(libxml-2.0)
 pkgconfig(libxslt)
+postgresql-contrib
 postgresql-devel
 postgresql-server
 nginx
@@ -19,6 +20,7 @@ crontabs
 pkgconfig(openssl)
 openssl
 redis
+rubygem-bundler
 )
 
 namespace :deploy do
