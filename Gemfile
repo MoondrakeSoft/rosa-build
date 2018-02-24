@@ -58,7 +58,8 @@ gem 'dotenv-rails'
 
 gem 'compass-rails'
 gem 'uglifier'
-gem 'mini_racer'
+# mini_racer segfaults on aarch64, use nodejs in stead
+#gem 'mini_racer'
 #gem 'therubyracer', platforms: [:mri, :rbx]
 #gem 'therubyrhino', platforms: :jruby
 
@@ -72,8 +73,6 @@ gem 'redis-semaphore'
 #github api
 gem "octokit", "~> 4.0"
 gem 'faraday-http-cache'
-
-gem 'localeapp'
 
 group :production do
   gem 'airbrake'
@@ -107,6 +106,7 @@ group :development do
   gem 'better_errors'
   gem 'binding_of_caller'
   gem 'meta_request'
+  gem 'localeapp'
   #gem 'ruby-dbus' if RUBY_PLATFORM =~ /linux/i # Error at deploy
   gem 'rack-mini-profiler', require: false
 end

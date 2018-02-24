@@ -21,6 +21,7 @@ pkgconfig(openssl)
 openssl
 redis
 rubygem-bundler
+nodejs
 )
 
 namespace :deploy do
