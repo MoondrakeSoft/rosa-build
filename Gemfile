@@ -73,6 +73,8 @@ gem 'redis-semaphore'
 gem "octokit", "~> 4.0"
 gem 'faraday-http-cache'
 
+gem 'localeapp'
+
 group :production do
   gem 'airbrake'
   gem 'puma'
@@ -105,7 +107,6 @@ group :development do
   gem 'better_errors'
   gem 'binding_of_caller'
   gem 'meta_request'
-  gem 'localeapp'
   #gem 'ruby-dbus' if RUBY_PLATFORM =~ /linux/i # Error at deploy
   gem 'rack-mini-profiler', require: false
 end
