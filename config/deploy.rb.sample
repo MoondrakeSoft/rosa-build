@@ -2,7 +2,7 @@
 lock "~> 3.10.1"
 
 set :application, 'rosa_build'
-set :repo_url, 'git@github.com:MoondrakeSoft/rosa-build.git'
+set :repo_url, 'git://github.com/MoondrakeSoft/rosa-build.git'
 
 # Default branch is :master
 set :branch, ENV['branch'] || 'capistrano'
