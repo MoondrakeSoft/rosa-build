@@ -58,8 +58,9 @@ gem 'dotenv-rails'
 
 gem 'compass-rails'
 gem 'uglifier'
-gem 'therubyracer', platforms: [:mri, :rbx]
-gem 'therubyrhino', platforms: :jruby
+# not used anyways..?
+#gem 'therubyracer', platforms: [:mri, :rbx]
+#gem 'therubyrhino', platforms: :jruby
 
 source 'https://rails-assets.org' do
   gem 'rails-assets-notifyjs'
