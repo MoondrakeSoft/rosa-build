@@ -20,7 +20,7 @@ Rails.application.configure do
   # since you don't have to restart the web server when you make code changes.
   config.cache_classes = false
 
-  config.cache_store = :redis_store, 'redis://localhost:6379/0', { expires_in: 10.minutes }
+  config.cache_store = :redis_store, (ENV["REDIS_URL"].to_s), { expires_in: 10.minutes }
   # Do not eager load code on boot.
   config.eager_load = false
 
@@ -34,7 +34,7 @@ Rails.application.configure do
   #config.action_mailer.perform_deliveries = true
   config.action_mailer.delivery_method = :smtp # :letter_opener
   config.action_mailer.smtp_settings = { host: "localhost", port: 1025 }
-  config.action_mailer.default_url_options = { host: 'localhost:3000' }
+  config.action_mailer.default_url_options = { host: ENV["HOST_URL"] }
 
   # Print deprecation notices to the Rails logger.
   config.active_support.deprecation = :log
