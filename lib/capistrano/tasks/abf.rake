@@ -48,6 +48,8 @@ namespace :deploy do
 	  end
 	end
       end
+
+      invoke 'puma:config'
     end
   end
 
