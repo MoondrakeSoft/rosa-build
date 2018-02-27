@@ -8,7 +8,7 @@ set :repo_url, 'git://github.com/MoondrakeSoft/rosa-build.git'
 set :branch, ENV['branch'] || 'capistrano'
 
 # Default deploy_to directory is /var/www/my_app_name
-set :deploy_to, "/srv/#{fetch :application}"
+set :deploy_to, "/srv/www/apps/#{fetch :application}"
 
 # Default value for :format is :airbrussh.
 # set :format, :airbrussh
