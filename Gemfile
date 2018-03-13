@@ -59,7 +59,7 @@ gem 'dotenv-rails'
 gem 'compass-rails'
 gem 'uglifier'
 # mini_racer segfaults on aarch64, use nodejs in stead
-#gem 'mini_racer'
+gem 'mini_racer'
 #gem 'therubyracer', platforms: [:mri, :rbx]
 #gem 'therubyrhino', platforms: :jruby
 
